@@ -1,0 +1,158 @@
+﻿@using ABCCarTraders
+@using ABCCarTraders.Models
+@using ABCCarTraders.Models.ViewModels
+@using ABCCarTraders.Helpers
+@using Microsoft.AspNetCore.Http
+@namespace ABCCarTraders.Views
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, ABCCarTraders
+
+@functions {
+    // Helper method to format currency
+    public static string FormatCurrency(decimal amount)
+    {
+        return string.Format("LKR {0:N2}", amount);
+    }
+
+    // Helper method to format date
+    public static string FormatDate(DateTime date)
+    {
+        return date.ToString("MMM dd, yyyy");
+    }
+
+    // Helper method to format date with time
+    public static string FormatDateTime(DateTime dateTime)
+    {
+        return dateTime.ToString("MMM dd, yyyy hh:mm tt");
+    }
+
+    // Helper method to get user-friendly enum display
+    public static string GetEnumDisplayName(Enum enumValue)
+    {
+        return enumValue.ToString().Replace("_", " ");
+    }
+
+    // Helper method to truncate text
+    public static string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+
+        return text.Substring(0, maxLength) + "...";
+    }
+
+    // Helper method to get relative time
+    public static string GetRelativeTime(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)(timeSpan.TotalDays / 7)} weeks ago";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)(timeSpan.TotalDays / 30)} months ago";
+
+        return $"{(int)(timeSpan.TotalDays / 365)} years ago";
+    }
+
+    // Helper method to get Bootstrap CSS class for status
+    public static string GetStatusCssClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "bg-warning text-dark",
+            "confirmed" => "bg-info",
+            "processing" => "bg-primary",
+            "shipped" => "bg-secondary",
+            "delivered" => "bg-success",
+            "cancelled" => "bg-danger",
+            "refunded" => "bg-dark",
+            "active" => "bg-success",
+            "inactive" => "bg-secondary",
+            "available" => "bg-success",
+            "out-of-stock" => "bg-danger",
+            "discontinued" => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    // Helper method to get icon for status
+    public static string GetStatusIcon(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "fas fa-clock",
+            "confirmed" => "fas fa-check-circle",
+            "processing" => "fas fa-cog fa-spin",
+            "shipped" => "fas fa-truck",
+            "delivered" => "fas fa-check-double",
+            "cancelled" => "fas fa-times-circle",
+            "refunded" => "fas fa-undo",
+            "active" => "fas fa-check-circle",
+            "inactive" => "fas fa-times-circle",
+            "available" => "fas fa-check",
+            "out-of-stock" => "fas fa-exclamation-triangle",
+            "discontinued" => "fas fa-ban",
+            _ => "fas fa-question-circle"
+        };
+    }
+
+    // Helper method to get file size in readable format
+    public static string GetFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return string.Format("{0:0.##} {1}", len, sizes[order]);
+    }
+
+    // Helper method to generate random placeholder image URL
+    public static string GetPlaceholderImage(int width = 300, int height = 200, string backgroundColor = "cccccc", string textColor = "000000")
+    {
+        return $"https://via.placeholder.com/{width}x{height}/{backgroundColor}/{textColor}?text=No+Image";
+    }
+
+    // Helper method to check if string is URL
+    public static bool IsUrl(string text)
+    {
+        return Uri.TryCreate(text, UriKind.Absolute, out var result) &&
+               (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
+    }
+
+    // Helper method to generate initials from name
+    public static string GetInitials(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "??";
+
+        var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+            return "??";
+
+        if (parts.Length == 1)
+            return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+
+        return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+    }
+
+    // Helper method to mask sensitive information
+    public static string MaskSensitiveInfo(string text, char maskChar = '*', int visibleChars = 4)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= visibleChars)
+            return text;
+
+        return text.Substring(0, visibleChars) + new string(maskChar, text.Length - visibleChars);
+    }
+}

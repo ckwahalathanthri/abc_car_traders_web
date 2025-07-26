@@ -1,0 +1,436 @@
+﻿@model ABCCarTraders.Models.ViewModels.CustomerProfileViewModel
+@{
+    ViewData["Title"] = "Customer Profile";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-primary text-white py-4 mb-4 rounded">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-user-circle me-3"></i>My Profile
+                </h1>
+                <p class="lead mb-0">Manage your personal information and preferences</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-light text-dark fs-6">
+                    <i class="fas fa-calendar-check me-1"></i>Member since @Model.FormattedMemberSince
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Messages -->
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Profile Information -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0 pb-0">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fas fa-user-edit me-2 text-primary"></i>Personal Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Profile" asp-controller="Customer" method="post" class="needs-validation" novalidate>
+                    <div class="row g-3">
+                        <!-- First Name -->
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label fw-semibold">
+                                <i class="fas fa-user me-1 text-muted"></i>First Name *
+                            </label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Enter your first name" required>
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label fw-semibold">
+                                <i class="fas fa-user me-1 text-muted"></i>Last Name *
+                            </label>
+                            <input asp-for="LastName" class="form-control" placeholder="Enter your last name" required>
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-1 text-muted"></i>Email Address *
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="Enter your email address" required>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- Phone Number -->
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold">
+                                <i class="fas fa-phone me-1 text-muted"></i>Phone Number
+                            </label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="Enter your phone number">
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- City -->
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label fw-semibold">
+                                <i class="fas fa-city me-1 text-muted"></i>City
+                            </label>
+                            <input asp-for="City" class="form-control" placeholder="Enter your city">
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- Address -->
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label fw-semibold">
+                                <i class="fas fa-map-marker-alt me-1 text-muted"></i>Address
+                            </label>
+                            <textarea asp-for="Address" class="form-control" rows="3" placeholder="Enter your full address"></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+                        
+                        <!-- Country -->
+                        <div class="col-md-6">
+                            <label asp-for="Country" class="form-label fw-semibold">
+                                <i class="fas fa-globe me-1 text-muted"></i>Country
+                            </label>
+                            <select asp-for="Country" class="form-select">
+                                <option value="">Select your country</option>
+                                <option value="Sri Lanka">Sri Lanka</option>
+                                <option value="India">India</option>
+                                <option value="United States">United States</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Germany">Germany</option>
+                                <option value="France">France</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Country" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Update Profile
+                        </button>
+                        <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Summary & Statistics -->
+    <div class="col-lg-4">
+        <!-- Profile Summary -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom-0 pb-0">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fas fa-chart-line me-2 text-success"></i>Account Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="profile-stats">
+                    <div class="stat-item d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                        <div class="stat-info">
+                            <i class="fas fa-shopping-bag text-primary me-2"></i>
+                            <span class="text-muted">Total Orders</span>
+                        </div>
+                        <span class="badge bg-primary fs-6">@Model.TotalOrders</span>
+                    </div>
+                    
+                    <div class="stat-item d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                        <div class="stat-info">
+                            <i class="fas fa-dollar-sign text-success me-2"></i>
+                            <span class="text-muted">Total Spent</span>
+                        </div>
+                        <span class="badge bg-success fs-6">@Model.FormattedTotalSpent</span>
+                    </div>
+                    
+                    <div class="stat-item d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                        <div class="stat-info">
+                            <i class="fas fa-calendar-alt text-info me-2"></i>
+                            <span class="text-muted">Member Since</span>
+                        </div>
+                        <span class="badge bg-info fs-6">@Model.FormattedMemberSince</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Password Change -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom-0 pb-0">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fas fa-key me-2 text-warning"></i>Security
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Keep your account secure by updating your password regularly.</p>
+                <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-outline-warning w-100">
+                    <i class="fas fa-lock me-2"></i>Change Password
+                </a>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0 pb-0">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fas fa-bolt me-2 text-danger"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("MyOrders", "Customer")" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View Orders
+                    </a>
+                    <a href="@Url.Action("Cart", "Order")" class="btn btn-outline-success">
+                        <i class="fas fa-shopping-cart me-2"></i>View Cart
+                    </a>
+                    <a href="@Url.Action("Index", "Cars")" class="btn btn-outline-info">
+                        <i class="fas fa-car me-2"></i>Browse Cars
+                    </a>
+                    <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-warning">
+                        <i class="fas fa-cogs me-2"></i>Shop Parts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Preferences -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0 pb-0">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fas fa-cog me-2 text-secondary"></i>Preferences
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="preferencesForm">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold mb-3">Email Notifications</h6>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="emailOrders" checked>
+                                <label class="form-check-label" for="emailOrders">
+                                    Order updates and tracking
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="emailPromotions">
+                                <label class="form-check-label" for="emailPromotions">
+                                    Promotions and special offers
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="emailNewsletter">
+                                <label class="form-check-label" for="emailNewsletter">
+                                    Newsletter and company updates
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold mb-3">Display Preferences</h6>
+                            <div class="mb-3">
+                                <label for="itemsPerPage" class="form-label">Items per page</label>
+                                <select id="itemsPerPage" class="form-select">
+                                    <option value="10">10 items</option>
+                                    <option value="20" selected>20 items</option>
+                                    <option value="50">50 items</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="currency" class="form-label">Preferred Currency</label>
+                                <select id="currency" class="form-select">
+                                    <option value="LKR" selected>LKR (Sri Lankan Rupee)</option>
+                                    <option value="USD">USD (US Dollar)</option>
+                                    <option value="EUR">EUR (Euro)</option>
+                                    <option value="GBP">GBP (British Pound)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-success" onclick="savePreferences()">
+                            <i class="fas fa-save me-2"></i>Save Preferences
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        border-radius: 15px;
+    }
+    
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .stat-item {
+        transition: background-color 0.3s ease;
+    }
+    
+    .stat-item:hover {
+        background-color: #e9ecef !important;
+    }
+    
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .badge {
+        font-size: 0.875em;
+        padding: 0.5em 0.75em;
+        border-radius: 6px;
+    }
+    
+    .needs-validation .form-control:invalid {
+        border-color: #dc3545;
+    }
+    
+    .needs-validation .form-control:valid {
+        border-color: #28a745;
+    }
+</style>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    // Save preferences
+    function savePreferences() {
+        const preferences = {
+            emailOrders: document.getElementById('emailOrders').checked,
+            emailPromotions: document.getElementById('emailPromotions').checked,
+            emailNewsletter: document.getElementById('emailNewsletter').checked,
+            itemsPerPage: document.getElementById('itemsPerPage').value,
+            currency: document.getElementById('currency').value
+        };
+        
+        // Save to server
+        fetch('@Url.Action("SavePreferences", "Customer")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify(preferences)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>Preferences saved successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.page-header').insertAdjacentElement('afterend', alertDiv);
+                
+                // Auto dismiss after 3 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 3000);
+            } else {
+                alert('Error saving preferences: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while saving preferences.');
+        });
+    }
+    
+    // Load saved preferences on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load preferences from server or localStorage
+        const savedPreferences = localStorage.getItem('customerPreferences');
+        if (savedPreferences) {
+            const preferences = JSON.parse(savedPreferences);
+            document.getElementById('emailOrders').checked = preferences.emailOrders !== false;
+            document.getElementById('emailPromotions').checked = preferences.emailPromotions === true;
+            document.getElementById('emailNewsletter').checked = preferences.emailNewsletter === true;
+            document.getElementById('itemsPerPage').value = preferences.itemsPerPage || '20';
+            document.getElementById('currency').value = preferences.currency || 'LKR';
+        }
+    });
+</script>

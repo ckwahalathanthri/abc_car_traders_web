@@ -1,0 +1,430 @@
+﻿@using ABCCarTraders.Controllers
+@model ContactViewModel
+@{
+    ViewData["Title"] = "Contact Us - ABC Car Traders";
+}
+
+<!-- Page Header -->
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold">Contact Us</h1>
+                <p class="lead">Get in touch with our expert team</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form & Info Section -->
+<section class="contact-section py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Contact Form -->
+            <div class="col-lg-8 mb-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-envelope me-2"></i>Send us a Message</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>@ViewBag.SuccessMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form asp-action="Contact" method="post" novalidate>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                    <input asp-for="Name" class="form-control" placeholder="Enter your full name">
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Email" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                    <input asp-for="Email" class="form-control" placeholder="Enter your email address">
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Subject" class="form-label fw-semibold">Subject</label>
+                                <input asp-for="Subject" class="form-control" placeholder="Enter the subject of your message">
+                                <span asp-validation-for="Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-4">
+                                <label asp-for="Message" class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+                                <textarea asp-for="Message" class="form-control" rows="6" placeholder="Enter your message here..."></textarea>
+                                <span asp-validation-for="Message" class="text-danger small"></span>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Contact Information</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="contact-info">
+                            <!-- Company Name -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold text-primary">@Model.CompanyInfo.Name</h5>
+                                <p class="text-muted small">Your trusted automotive partner</p>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt text-primary fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Address</h6>
+                                    <p class="text-muted small mb-0">@Model.CompanyInfo.Address</p>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-phone text-success fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Phone</h6>
+                                    <p class="text-muted small mb-0">
+                                        <a href="tel:@Model.CompanyInfo.Phone.Replace(" ", "")" class="text-decoration-none">@Model.CompanyInfo.Phone</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-envelope text-warning fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Email</h6>
+                                    <p class="text-muted small mb-0">
+                                        <a href="mailto:@Model.CompanyInfo.Email" class="text-decoration-none">@Model.CompanyInfo.Email</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Working Hours -->
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-clock text-info fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Working Hours</h6>
+                                    <p class="text-muted small mb-0">@Model.CompanyInfo.WorkingHours</p>
+                                    <p class="text-muted small mb-0">Sunday: Closed</p>
+                                </div>
+                            </div>
+
+                            <!-- Emergency Contact -->
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-phone-alt text-danger fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-semibold mb-1">Emergency Contact</h6>
+                                    <p class="text-muted small mb-0">
+                                        <a href="tel:@Model.CompanyInfo.EmergencyContact.Replace(" ", "")" class="text-decoration-none">@Model.CompanyInfo.EmergencyContact</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Social Media -->
+                            <div class="border-top pt-3">
+                                <h6 class="fw-semibold mb-3">Follow Us</h6>
+                                <div class="d-flex gap-2">
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-info btn-sm">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-danger btn-sm">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="map-section py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="fw-bold text-center mb-4">Find Us Here</h3>
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <!-- Google Maps Embed -->
+                        <div class="ratio ratio-21x9" style="min-height: 400px;">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.798467127355!2d79.8612459!3d6.9270786!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae253d10f7a7003%3A0x320b2e4d32d3838d!2sColombo!5e0!3m2!1sen!2slk!4v1635123456789!5m2!1sen!2slk"
+                                    style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="fw-bold text-center mb-5">Frequently Asked Questions</h3>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                What types of vehicles do you sell?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We offer a wide range of new and pre-owned vehicles including sedans, SUVs, hatchbacks, and commercial vehicles from trusted brands like Toyota, Honda, BMW, Mercedes-Benz, and more.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Do you provide financing options?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, we offer flexible financing solutions with competitive interest rates. Our finance team can help you find the best payment plan that suits your budget and requirements.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                What warranty do you provide?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                All our vehicles come with comprehensive warranty coverage. New vehicles include manufacturer warranty, while pre-owned vehicles come with our own warranty depending on the vehicle's condition and age.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Do you sell genuine car parts?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, we stock only genuine car parts and accessories from authorized dealers and manufacturers. All parts come with authenticity certificates and warranty coverage.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFive">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                How can I schedule a test drive?
+                            </button>
+                        </h2>
+                        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can schedule a test drive by calling us, sending an email, or visiting our showroom. We recommend booking in advance to ensure the vehicle you're interested in is available.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* <!-- Call to Action -->
+<section class="cta py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12">
+                <h2 class="fw-bold mb-3">Ready to Get Started?</h2>
+                <p class="lead mb-4">Visit our showroom or browse our online inventory to find your perfect vehicle</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="@Url.Action("Index", "Cars")" class="btn btn-warning btn-lg">Browse Cars</a>
+                    <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-light btn-lg">Shop Parts</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // Form validation enhancement
+            $('form').on('submit', function(e) {
+                var isValid = true;
+                
+                // Check required fields
+                $(this).find('input[required], textarea[required]').each(function() {
+                    if ($(this).val().trim() === '') {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid').addClass('is-valid');
+                    }
+                });
+                
+                // Email validation
+                var email = $('input[type="email"]').val();
+                if (email && !isValidEmail(email)) {
+                    isValid = false;
+                    $('input[type="email"]').addClass('is-invalid');
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    showToast('error', 'Please fill in all required fields correctly.');
+                }
+            });
+            
+            // Real-time validation
+            $('input, textarea').on('blur', function() {
+                if ($(this).attr('required') && $(this).val().trim() === '') {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+            
+            // Email validation
+            $('input[type="email"]').on('blur', function() {
+                var email = $(this).val();
+                if (email && !isValidEmail(email)) {
+                    $(this).addClass('is-invalid');
+                } else if (email) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+        });
+        
+        function isValidEmail(email) {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function showToast(type, message) {
+            var toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            var toastContainer = $('#toast-container');
+            if (toastContainer.length === 0) {
+                $('body').append('<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>');
+                toastContainer = $('#toast-container');
+            }
+            
+            var toastElement = $(toastHtml);
+            toastContainer.append(toastElement);
+            
+            var toast = new bootstrap.Toast(toastElement[0]);
+            toast.show();
+            
+            toastElement.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    </script>
+} *@
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    .contact-info .d-flex {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+    
+    .contact-info .d-flex:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .form-control.is-valid {
+        border-color: #28a745;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .cta {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>

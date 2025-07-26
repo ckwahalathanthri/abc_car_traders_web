@@ -1,0 +1,610 @@
+﻿@using ABCCarTraders.Controllers
+@model CarPartListViewModel
+@{
+    ViewData["Title"] = "Browse Car Parts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-success text-white py-5 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="fas fa-cogs me-3"></i>Browse Car Parts
+                </h1>
+                <p class="lead mb-0">Genuine parts for all vehicle makes and models</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-overview text-white">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span class="fw-bold">@Model.TotalCarParts</span> Parts Available
+                    </div>
+                    <div>
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Starting from <span class="fw-bold">@Model.MinPrice.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="filters-sidebar">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter me-2"></i>Filter Car Parts
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <form asp-action="Index" method="get" id="filterForm">
+                            <!-- Search -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-search me-2 text-success"></i>Search
+                                </label>
+                                <input asp-for="SearchModel.SearchTerm" class="form-control" 
+                                       placeholder="Part name, part number..." />
+                            </div>
+                            
+                            <!-- Part Number -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-barcode me-2 text-primary"></i>Part Number
+                                </label>
+                                <input type="text" name="partNumber" class="form-control" 
+                                       placeholder="Enter part number..." />
+                            </div>
+                            
+                            <!-- Price Range -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-2 text-warning"></i>Price Range
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input asp-for="SearchModel.MinPrice" type="number" 
+                                               class="form-control form-control-sm" placeholder="Min" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input asp-for="SearchModel.MaxPrice" type="number" 
+                                               class="form-control form-control-sm" placeholder="Max" />
+                                    </div>
+                                </div>
+                                <div class="price-range-display mt-2 small text-muted">
+                                    Available: @Model.MinPrice.ToString("C") - @Model.MaxPrice.ToString("C")
+                                </div>
+                            </div>
+                            
+                            <!-- Brand -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-star me-2 text-info"></i>Brand
+                                </label>
+                                <select asp-for="SearchModel.BrandId" asp-items="Model.Brands" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Brands</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-tags me-2 text-danger"></i>Category
+                                </label>
+                                <select asp-for="SearchModel.CategoryId" asp-items="Model.Categories" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Compatibility -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-car me-2 text-secondary"></i>Vehicle Compatibility
+                                </label>
+                                <input asp-for="SearchModel.Compatibility" class="form-control form-control-sm" 
+                                       placeholder="e.g., Toyota Camry 2020" />
+                                <div class="form-text small">Enter car make, model, year</div>
+                            </div>
+                            
+                            <!-- Stock Status -->
+                            @* <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-boxes me-2 text-dark"></i>Availability
+                                </label>
+                                <div class="form-check">
+                                    <input asp-for="SearchModel.InStock" type="checkbox" class="form-check-input" 
+                                           id="inStockOnly">
+                                    <label class="form-check-label" for="inStockOnly">
+                                        In Stock Only
+                                    </label>
+                                </div>
+                            </div> *@
+                            
+                            <!-- Filter Actions -->
+                            <div class="filter-actions p-3">
+                                <button type="submit" class="btn btn-success w-100 mb-2">
+                                    <i class="fas fa-search me-2"></i>Apply Filters
+                                </button>
+                                <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-refresh me-2"></i>Clear All
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Results Header -->
+            <div class="results-header mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="results-info mb-2">
+                        <h4 class="mb-0">
+                            Showing @Model.CarParts.Count of @Model.TotalCarParts parts
+                            @if (!string.IsNullOrEmpty(Model.SearchModel.SearchTerm))
+                            {
+                                <span class="text-muted">for "@Model.SearchModel.SearchTerm"</span>
+                            }
+                        </h4>
+                        <div class="small text-muted mt-1">
+                            <span class="me-3">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                @Model.AvailableCarParts Available
+                            </span>
+                            <span>
+                                <i class="fas fa-times-circle text-danger me-1"></i>
+                                @Model.OutOfStockCarParts Out of Stock
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 align-items-center mb-2">
+                        <!-- View Toggle -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="toggleView('grid')" id="gridView">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="toggleView('list')" id="listView">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Sort Options -->
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="sortParts(this.value)">
+                            <option value="">Sort By</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="name_asc">Name: A to Z</option>
+                            <option value="brand_asc">Brand: A to Z</option>
+                            <option value="stock_desc">Stock: High to Low</option>
+                            <option value="newest">Newest First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Parts Grid/List -->
+            <div id="partsContainer">
+                @if (Model.CarParts?.Any() == true)
+                {
+                    <div class="parts-grid" id="gridContainer">
+                        <div class="row g-4">
+                            @foreach (var part in Model.CarParts)
+                            {
+                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                    <div class="part-card card h-100 border-0 shadow-sm">
+                                        <div class="position-relative">
+                                            <img src="@(part.ImageUrl ?? "/images/placeholder-part.jpg")" 
+                                                 class="card-img-top part-image" alt="@part.PartName">
+                                            
+                                            <!-- Part Number Badge -->
+                                            <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                                #@part.PartNumber
+                                            </span>
+                                            
+                                            <!-- Stock Status -->
+                                            @if (part.StockQuantity == 0)
+                                            {
+                                                <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                                    Out of Stock
+                                                </span>
+                                            }
+                                            else if (part.StockQuantity <= 10)
+                                            {
+                                                <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                                    Low Stock (@part.StockQuantity)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                                    In Stock (@part.StockQuantity)
+                                                </span>
+                                            }
+                                            
+                                            <!-- Quick Actions -->
+                                            <div class="part-actions position-absolute bottom-0 end-0 m-2 d-none">
+                                                <div class="btn-group-vertical" role="group">
+                                                    <button type="button" class="btn btn-light btn-sm" 
+                                                            onclick="addToWishlist(@part.CarPartId)" title="Add to Wishlist">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-light btn-sm" 
+                                                            onclick="addToCompare(@part.CarPartId)" title="Compare">
+                                                        <i class="fas fa-balance-scale"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body">
+                                            <div class="part-header mb-2">
+                                                <h5 class="card-title mb-1">@part.PartName</h5>
+                                                <div class="part-meta">
+                                                    <span class="badge bg-light text-dark me-1">@part.BrandName</span>
+                                                    <span class="badge bg-secondary">@part.CategoryName</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="part-details mb-3">
+                                                <div class="small text-muted">
+                                                    <div class="mb-1">
+                                                        <i class="fas fa-barcode me-1"></i>
+                                                        Part #: <strong>@part.PartNumber</strong>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(part.Compatibility))
+                                                    {
+                                                        <div class="mb-1">
+                                                            <i class="fas fa-car me-1"></i>
+                                                            Compatible: @(part.Compatibility.Length > 30 ? part.Compatibility.Substring(0, 30) + "..." : part.Compatibility)
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="part-price mb-3">
+                                                <h4 class="text-success fw-bold mb-0">@part.FormattedPrice</h4>
+                                            </div>
+                                            
+                                            <div class="part-actions">
+                                                <div class="row g-2">
+                                                    <div class="col-8">
+                                                        <a href="@Url.Action("Details", new { id = part.CarPartId })" 
+                                                           class="btn btn-success w-100">
+                                                            <i class="fas fa-eye me-1"></i>View Details
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        @if (part.IsAvailable && part.StockQuantity > 0)
+                                                        {
+                                                            <button type="button" class="btn btn-outline-primary w-100" 
+                                                                    onclick="addToCart(@part.CarPartId)" title="Add to Cart">
+                                                                <i class="fas fa-cart-plus"></i>
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" class="btn btn-secondary w-100" disabled>
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- List View (Hidden by default) -->
+                    <div class="parts-list d-none" id="listContainer">
+                        @foreach (var part in Model.CarParts)
+                        {
+                            <div class="part-list-item card mb-3 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <img src="@(part.ImageUrl ?? "/images/placeholder-part.jpg")" 
+                                                 class="img-fluid rounded" alt="@part.PartName"
+                                                 style="height: 120px; object-fit: cover;">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5 class="fw-bold">@part.PartName</h5>
+                                            <div class="part-specs mb-2">
+                                                <span class="badge bg-primary me-1">#@part.PartNumber</span>
+                                                <span class="badge bg-light text-dark me-1">@part.BrandName</span>
+                                                <span class="badge bg-secondary">@part.CategoryName</span>
+                                            </div>
+                                            <div class="part-features text-muted small">
+                                                @if (!string.IsNullOrEmpty(part.Compatibility))
+                                                {
+                                                    <div class="mb-1">
+                                                        <i class="fas fa-car me-1"></i>
+                                                        Compatible: @part.Compatibility
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <i class="fas fa-boxes me-1"></i>
+                                                    Stock: @part.StockQuantity units
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <h4 class="text-success fw-bold mb-3">@part.FormattedPrice</h4>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <a href="@Url.Action("Details", new { id = part.CarPartId })" 
+                                                   class="btn btn-success">View Details</a>
+                                                @if (part.IsAvailable && part.StockQuantity > 0)
+                                                {
+                                                    <button type="button" class="btn btn-outline-primary" 
+                                                            onclick="addToCart(@part.CarPartId)">
+                                                        <i class="fas fa-cart-plus"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- No Results -->
+                    <div class="no-results text-center py-5">
+                        <i class="fas fa-cogs fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted mb-3">No Car Parts Found</h3>
+                        <p class="text-muted mb-4">
+                            We couldn't find any car parts matching your criteria. 
+                            Try adjusting your filters or search terms.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="@Url.Action("Index", "CarParts")" class="btn btn-success">
+                                <i class="fas fa-refresh me-2"></i>Clear Filters
+                            </a>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <!-- Pagination -->
+            @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+            {
+                <nav aria-label="Car parts pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.Pagination.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.Pagination.CurrentPage - 1)">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); 
+                              i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); 
+                              i++)
+                        {
+                            <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.Pagination.CurrentPage < Model.Pagination.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.Pagination.CurrentPage + 1)">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    }
+    
+    .part-card {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .part-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .part-card:hover .part-actions {
+        display: block !important;
+    }
+    
+    .part-image {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .filter-section {
+        transition: background-color 0.3s ease;
+    }
+    
+    .filter-section:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .part-list-item img {
+        height: 120px;
+        object-fit: cover;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.4em 0.6em;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    @@media (max-width: 768px) {
+        .filters-sidebar .card {
+            position: relative !important;
+            top: auto !important;
+        }
+        
+        .part-image {
+            height: 180px;
+        }
+    }
+</style>
+
+<script>
+    function toggleView(viewType) {
+        const gridContainer = document.getElementById('gridContainer');
+        const listContainer = document.getElementById('listContainer');
+        const gridBtn = document.getElementById('gridView');
+        const listBtn = document.getElementById('listView');
+        
+        if (viewType === 'grid') {
+            gridContainer.classList.remove('d-none');
+            listContainer.classList.add('d-none');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        } else {
+            gridContainer.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+        }
+        
+        localStorage.setItem('partViewPreference', viewType);
+    }
+    
+    function sortParts(sortBy) {
+        if (sortBy) {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', sortBy);
+            window.location.href = url.toString();
+        }
+    }
+    
+    function addToCart(partId) {
+        if (!@(Context.Session.GetString("UserId") != null ? "true" : "false")) {
+            window.location.href = '@Url.Action("Login", "Account")';
+            return;
+        }
+        
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ itemId: partId, itemType: 'CarPart', quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Car part added to cart successfully!');
+                updateCartCount();
+            } else {
+                alert('Error adding part to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the part to cart.');
+        });
+    }
+    
+    function addToWishlist(partId) {
+        alert('Wishlist functionality coming soon!');
+    }
+    
+    function addToCompare(partId) {
+        let compareList = JSON.parse(localStorage.getItem('partCompare') || '[]');
+        if (compareList.length >= 4) {
+            alert('You can compare maximum 4 parts at a time.');
+            return;
+        }
+        
+        if (compareList.includes(partId)) {
+            alert('This part is already in your comparison list.');
+            return;
+        }
+        
+        compareList.push(partId);
+        localStorage.setItem('partCompare', JSON.stringify(compareList));
+        alert('Part added to comparison list!');
+    }
+    
+    function updateCartCount() {
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+    
+    // Load user's view preference
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewPreference = localStorage.getItem('partViewPreference') || 'grid';
+        toggleView(viewPreference);
+    });
+    
+    // Auto-submit filters on change
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const filterInputs = filterForm.querySelectorAll('select, input');
+        
+        filterInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                clearTimeout(input.submitTimeout);
+                input.submitTimeout = setTimeout(() => {
+                    filterForm.submit();
+                }, 500);
+            });
+        });
+    });
+</script>

@@ -1,0 +1,633 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarDetailsViewModel
+@{
+    ViewData["Title"] = $"{Model.Car.BrandName} {Model.Car.Model} ({Model.Car.Year})";
+    ViewData["ItemName"] = $"{Model.Car.BrandName} {Model.Car.Model}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    var breadcrumbModel = new ABCCarTraders.Models.ViewModels.BreadcrumbViewModel
+    {
+        Items = Model.Breadcrumbs ?? new List<ABCCarTraders.Models.ViewModels.BreadcrumbItem>()
+    };
+}
+
+<!-- Render breadcrumb partial with correct model -->
+@await Html.PartialAsync("_BreadcrumbNavigation", breadcrumbModel)
+
+<!-- Car Details -->
+<div class="container-fluid">
+    <div class="row g-4">
+        <!-- Car Images -->
+        <div class="col-lg-6">
+            <div class="car-images sticky-top" style="top: 20px;">
+                <!-- Main Image -->
+                <div class="main-image-container mb-3">
+                    <div class="position-relative">
+                        <img src="@(Model.Car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                             class="img-fluid rounded shadow" alt="@Model.Car.BrandName @Model.Car.Model"
+                             id="mainCarImage" style="width: 100%; height: 400px; object-fit: cover;">
+                        
+                        <!-- Year Badge -->
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-3 fs-6">
+                            @Model.Car.Year
+                        </span>
+                        
+                        <!-- Stock Status -->
+                        <span class="badge bg-@Model.StockStatusColor position-absolute top-0 end-0 m-3 fs-6">
+                            @Model.StockMessage
+                        </span>
+                        
+                        <!-- Image Navigation -->
+                        <div class="image-nav position-absolute bottom-0 end-0 m-3">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-light btn-sm" onclick="previousImage()" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-light btn-sm" onclick="nextImage()" disabled>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Thumbnail Gallery (placeholder for multiple images) -->
+                <div class="thumbnail-gallery">
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <img src="@(Model.Car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                 class="img-fluid rounded thumbnail active" 
+                                 onclick="changeMainImage(this.src)" style="height: 80px; object-fit: cover; cursor: pointer;">
+                        </div>
+                        <!-- Additional thumbnails would go here if multiple images available -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Car Information -->
+        <div class="col-lg-6">
+            <div class="car-info">
+                <!-- Car Header -->
+                <div class="car-header mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h1 class="display-6 fw-bold mb-2">@Model.Car.BrandName @Model.Car.Model</h1>
+                            <div class="car-categories">
+                                <span class="badge bg-primary me-2">@Model.Car.CategoryName</span>
+                                <span class="badge bg-secondary">@Model.Car.FuelType</span>
+                            </div>
+                        </div>
+                        <div class="car-actions">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-danger" onclick="addToWishlist(@Model.Car.CarId)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="addToCompare(@Model.Car.CarId)">
+                                    <i class="fas fa-balance-scale"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="shareVehicle()">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="car-price mb-4">
+                        <h2 class="text-success fw-bold mb-0">@Model.Car.FormattedPrice</h2>
+                        <small class="text-muted">Price includes all applicable taxes</small>
+                    </div>
+                </div>
+                
+                <!-- Key Specifications -->
+                <div class="key-specs mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Key Specifications
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Year</div>
+                                        <div class="text-muted">@Model.Car.Year</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-gas-pump text-danger me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Fuel Type</div>
+                                        <div class="text-muted">@Model.Car.FuelType</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-cogs text-secondary me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Transmission</div>
+                                        <div class="text-muted">@Model.Car.Transmission</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if (Model.Car.Mileage.HasValue)
+                        {
+                            <div class="col-6">
+                                <div class="spec-item p-3 bg-light rounded">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-tachometer-alt text-info me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Mileage</div>
+                                            <div class="text-muted">@Model.Car.Mileage.Value.ToString("N0") km</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.Car.Color))
+                        {
+                            <div class="col-6">
+                                <div class="spec-item p-3 bg-light rounded">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-palette text-warning me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Color</div>
+                                            <div class="text-muted">@Model.Car.Color</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.Car.EngineCapacity))
+                        {
+                            <div class="col-6">
+                                <div class="spec-item p-3 bg-light rounded">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-engine text-dark me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Engine</div>
+                                            <div class="text-muted">@Model.Car.EngineCapacity</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Add to Cart Section -->
+                <div class="add-to-cart-section mb-4">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">
+                                <i class="fas fa-shopping-cart me-2"></i>Purchase This Vehicle
+                            </h6>
+                            
+                            @if (Model.CanAddToCart && Model.Car.IsAvailable && Model.Car.StockQuantity > 0)
+                            {
+                                <form id="addToCartForm">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Quantity</label>
+                                            <select class="form-select" id="quantity" name="quantity">
+                                                @for (int i = 1; i <= Math.Min(Model.Car.StockQuantity, 5); i++)
+                                                {
+                                                    <option value="@i">@i</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <button type="button" class="btn btn-primary btn-lg w-100" onclick="addToCart()">
+                                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            }
+                            else if (!Model.IsUserLoggedIn)
+                            {
+                                <p class="text-muted mb-3">Please login to purchase this vehicle.</p>
+                                <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login to Purchase
+                                </a>
+                            }
+                            else if (!Model.Car.IsAvailable || Model.Car.StockQuantity == 0)
+                            {
+                                <p class="text-muted mb-3">This vehicle is currently not available for purchase.</p>
+                                <button type="button" class="btn btn-outline-secondary btn-lg w-100" disabled>
+                                    <i class="fas fa-times me-2"></i>Out of Stock
+                                </button>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-3">Contact us for purchasing information.</p>
+                                <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="fas fa-phone me-2"></i>Contact Us
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="contact-info">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">
+                                <i class="fas fa-headset me-2"></i>Need Help?
+                            </h6>
+                            <p class="card-text mb-3">Our experts are here to help you find the perfect vehicle.</p>
+                            <div class="d-flex gap-2">
+                                <a href="tel:+94123456789" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-phone me-1"></i>Call Us
+                                </a>
+                                <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-envelope me-1"></i>Email Us
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Description and Features -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="car-details-tabs">
+                <ul class="nav nav-tabs" id="carDetailsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" 
+                                data-bs-target="#description" type="button" role="tab">
+                            <i class="fas fa-info-circle me-2"></i>Description
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" 
+                                data-bs-target="#features" type="button" role="tab">
+                            <i class="fas fa-list me-2"></i>Features
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" 
+                                data-bs-target="#specifications" type="button" role="tab">
+                            <i class="fas fa-cog me-2"></i>Full Specifications
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="carDetailsTabContent">
+                    <!-- Description Tab -->
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Model.Car.Description))
+                                {
+                                    <p class="lead">@Model.Car.Description</p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No detailed description available for this vehicle.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Features Tab -->
+                    <div class="tab-pane fade" id="features" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                @if (Model.FeaturesList?.Any() == true)
+                                {
+                                    <div class="row g-3">
+                                        @foreach (var feature in Model.FeaturesList)
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="feature-item d-flex align-items-center">
+                                                    <i class="fas fa-check-circle text-success me-3"></i>
+                                                    <span>@feature</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No specific features listed for this vehicle.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Specifications Tab -->
+                    <div class="tab-pane fade" id="specifications" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-semibold">Brand</td>
+                                                <td>@Model.Car.BrandName</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Model</td>
+                                                <td>@Model.Car.Model</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Category</td>
+                                                <td>@Model.Car.CategoryName</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Year</td>
+                                                <td>@Model.Car.Year</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Fuel Type</td>
+                                                <td>@Model.Car.FuelType</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Transmission</td>
+                                                <td>@Model.Car.Transmission</td>
+                                            </tr>
+                                            @if (!string.IsNullOrEmpty(Model.Car.EngineCapacity))
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold">Engine Capacity</td>
+                                                    <td>@Model.Car.EngineCapacity</td>
+                                                </tr>
+                                            }
+                                            @if (Model.Car.Mileage.HasValue)
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold">Mileage</td>
+                                                    <td>@Model.Car.Mileage.Value.ToString("N0") km</td>
+                                                </tr>
+                                            }
+                                            @if (!string.IsNullOrEmpty(Model.Car.Color))
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold">Color</td>
+                                                    <td>@Model.Car.Color</td>
+                                                </tr>
+                                            }
+                                            <tr>
+                                                <td class="fw-semibold">Price</td>
+                                                <td class="text-success fw-bold">@Model.Car.FormattedPrice</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Availability</td>
+                                                <td>
+                                                    <span class="badge bg-@Model.StockStatusColor">@Model.StockMessage</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Cars -->
+    @if (Model.SimilarCars?.Any() == true)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="fw-bold mb-4">
+                    <i class="fas fa-car me-2 text-primary"></i>Similar Cars You Might Like
+                </h3>
+                <div class="row g-4">
+                    @foreach (var similarCar in Model.SimilarCars.Take(4))
+                    {
+                        <div class="col-xl-3 col-lg-4 col-md-6">
+                            <div class="card h-100 border-0 shadow-sm similar-car-card">
+                                <div class="position-relative">
+                                    <img src="@(similarCar.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                         class="card-img-top" alt="@similarCar.BrandName @similarCar.Model"
+                                         style="height: 160px; object-fit: cover;">
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                        @similarCar.Year
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">@similarCar.BrandName @similarCar.Model</h6>
+                                    <p class="text-success fw-bold mb-2">@similarCar.FormattedPrice</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("Details", new { id = similarCar.CarId })" 
+                                           class="btn btn-primary btn-sm flex-fill">
+                                            View Details
+                                        </a>
+                                        @if (similarCar.IsAvailable && similarCar.StockQuantity > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                                    onclick="addToCart(@similarCar.CarId)">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .spec-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .spec-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .thumbnail {
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+    }
+    
+    .thumbnail.active {
+        border-color: #0d6efd;
+    }
+    
+    .thumbnail:hover {
+        border-color: #0d6efd;
+        opacity: 0.8;
+    }
+    
+    .feature-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .feature-item:last-child {
+        border-bottom: none;
+    }
+    
+    .similar-car-card {
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .similar-car-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .nav-tabs .nav-link {
+        border-radius: 10px 10px 0 0;
+        border: none;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        margin-right: 5px;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-radius: 0 10px 10px 10px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    @@media (max-width: 768px) {
+        .car-actions .btn-group {
+            flex-direction: column;
+        }
+        
+        .add-to-cart-section .row {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function changeMainImage(imageSrc) {
+        const mainImage = document.getElementById('mainCarImage');
+        mainImage.src = imageSrc;
+        
+        // Update active thumbnail
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+    
+    function previousImage() {
+        // Implementation for image navigation if multiple images
+    }
+    
+    function nextImage() {
+        // Implementation for image navigation if multiple images
+    }
+    
+    function addToCart() {
+        const quantity = document.getElementById('quantity').value;
+        
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ 
+                itemId: @Model.Car.CarId, 
+                itemType: 'Car', 
+                quantity: parseInt(quantity) 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Car added to cart successfully!');
+                updateCartCount();
+            } else {
+                alert('Error adding car to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the car to cart.');
+        });
+    }
+    
+    function addToWishlist(carId) {
+        // Implementation for wishlist functionality
+        alert('Wishlist functionality coming soon!');
+    }
+    
+    function addToCompare(carId) {
+        let compareList = JSON.parse(localStorage.getItem('carCompare') || '[]');
+        if (compareList.length >= 4) {
+            alert('You can compare maximum 4 cars at a time.');
+            return;
+        }
+        
+        if (compareList.includes(carId)) {
+            alert('This car is already in your comparison list.');
+            return;
+        }
+        
+        compareList.push(carId);
+        localStorage.setItem('carCompare', JSON.stringify(compareList));
+        alert('Car added to comparison list!');
+    }
+    
+    function shareVehicle() {
+        if (navigator.share) {
+            navigator.share({
+                title: '@Model.Car.BrandName @Model.Car.Model (@Model.Car.Year)',
+                text: 'Check out this @Model.Car.BrandName @Model.Car.Model for @Model.Car.FormattedPrice',
+                url: window.location.href
+            });
+        } else {
+            // Fallback to copying URL to clipboard
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Vehicle link copied to clipboard!');
+            });
+        }
+    }
+    
+    function updateCartCount() {
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+</script>

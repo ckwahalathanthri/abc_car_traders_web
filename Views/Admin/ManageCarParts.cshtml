@@ -1,0 +1,485 @@
+﻿@using ABCCarTraders.Controllers
+@model CarPartListViewModel
+@{
+    ViewData["Title"] = "Manage Car Parts";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="manage-parts-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-cogs me-2 text-success"></i>Manage Car Parts
+                    </h1>
+                    <p class="text-muted mb-0">Total: @Model.TotalCarParts parts | Available: @Model.AvailableCarParts | Low Stock: @Model.OutOfStockCarParts</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Action("AddCarPart", "Admin")" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Add New Part
+                    </a>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
+                        <i class="fas fa-upload me-1"></i>Bulk Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search" placeholder="Search by part name, number..." 
+                                       value="@Context.Request.Query["search"]">
+                            </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <select class="form-select" name="brand">
+                                <option value="">All Brands</option>
+                                @if (ViewBag.Brands != null)
+                                {
+                                    @foreach (var brand in ViewBag.Brands as List<dynamic>)
+                                    {
+                                        var isSelected = Context.Request.Query["brand"] == brand.BrandId.ToString();
+                                        <option value="@brand.BrandId" selected="@isSelected">
+                                            @brand.BrandName
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <select class="form-select" name="category">
+                                <option value="">All Categories</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    @foreach (var category in ViewBag.Categories as List<dynamic>)
+                                    {
+                                        var isSelected = Context.Request.Query["category"] == category.CategoryId.ToString();
+                                        <option value="@category.CategoryId" selected="@isSelected">
+                                            @category.CategoryName
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <select class="form-select" name="stock">
+                                <option value="">All Stock Levels</option>
+                                <option value="in-stock" selected="@(Context.Request.Query["stock"] == "in-stock")">In Stock</option>
+                                <option value="low-stock" selected="@(Context.Request.Query["stock"] == "low-stock")">Low Stock</option>
+                                <option value="out-of-stock" selected="@(Context.Request.Query["stock"] == "out-of-stock")">Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="col-lg-2">
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                    <i class="fas fa-undo me-1"></i>Reset
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="toggleAdvancedFilters()">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Advanced Filters (Hidden by default) -->
+                    <div id="advancedFilters" class="mt-3" style="display: none;">
+                        <hr>
+                        <div class="row g-3">
+                            <div class="col-lg-3">
+                                <label class="form-label">Price Range</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" class="form-control" name="minPrice" placeholder="Min" 
+                                           value="@Context.Request.Query["minPrice"]">
+                                    <input type="number" class="form-control" name="maxPrice" placeholder="Max" 
+                                           value="@Context.Request.Query["maxPrice"]">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="form-label">Stock Quantity</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" class="form-control" name="minStock" placeholder="Min Stock" 
+                                           value="@Context.Request.Query["minStock"]">
+                                    <input type="number" class="form-control" name="maxStock" placeholder="Max Stock" 
+                                           value="@Context.Request.Query["maxStock"]">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="form-label">Compatibility</label>
+                                <input type="text" class="form-control" name="compatibility" placeholder="Car model compatibility" 
+                                       value="@Context.Request.Query["compatibility"]">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="form-label">Added Date</label>
+                                <input type="date" class="form-control" name="dateAdded" 
+                                       value="@Context.Request.Query["dateAdded"]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parts Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="card-title fw-bold mb-0">Parts Inventory</h6>
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="viewType" id="gridView" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="gridView">
+                                <i class="fas fa-th"></i>
+                            </label>
+                            <input type="radio" class="btn-check" name="viewType" id="listView" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="listView">
+                                <i class="fas fa-list"></i>
+                            </label>
+                        </div>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportData('excel')">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="exportData('pdf')">
+                            <i class="fas fa-file-pdf me-1"></i>PDF
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.CarParts.Any())
+                    {
+                        <!-- Grid View -->
+                        <div id="gridViewContainer" class="p-3">
+                            <div class="row g-3">
+                                @foreach (var part in Model.CarParts)
+                                {
+                                    <div class="col-xl-3 col-lg-4 col-md-6">
+                                        <div class="card part-card h-100">
+                                            <div class="position-relative">
+                                                @if (!string.IsNullOrEmpty(part.ImageUrl))
+                                                {
+                                                    <img src="@part.ImageUrl" alt="@part.PartName" class="card-img-top part-image">
+                                                }
+                                                else
+                                                {
+                                                    <div class="part-image-placeholder">
+                                                        <i class="fas fa-cogs fa-2x text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div class="position-absolute top-0 end-0 m-2">
+                                                    <span class="badge bg-@(part.StockQuantity > 10 ? "success" : part.StockQuantity > 0 ? "warning" : "danger")">
+                                                        @part.StockQuantity in stock
+                                                    </span>
+                                                </div>
+                                                <div class="card-actions">
+                                                    <button class="btn btn-sm btn-light" onclick="viewPartDetails(@part.CarPartId)" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <a href="@Url.Action("EditCarPart", "Admin", new { id = part.CarPartId })" 
+                                                       class="btn btn-sm btn-light" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="btn btn-sm btn-light" onclick="confirmDeletePart(@part.CarPartId, '@part.PartName')" title="Delete">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h6 class="card-title fw-bold mb-1">@part.PartName</h6>
+                                                <p class="card-text text-muted small mb-2">Part #: @part.PartNumber</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="fw-bold text-success">$@part.Price.ToString("N2")</span>
+                                                    <small class="text-muted">@part.BrandName</small>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(part.Compatibility))
+                                                {
+                                                    <small class="text-info d-block mt-1">Compatible: @part.Compatibility</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- List View (Hidden by default) -->
+                        <div id="listViewContainer" class="table-responsive" style="display: none;">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">
+                                            <input type="checkbox" id="selectAllParts" class="form-check-input">
+                                        </th>
+                                        <th>Image</th>
+                                        <th>Part Details</th>
+                                        <th>Brand</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th width="120">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var part in Model.CarParts)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input part-checkbox" value="@part.CarPartId">
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(part.ImageUrl))
+                                                {
+                                                    <img src="@part.ImageUrl" alt="@part.PartName" class="part-thumbnail">
+                                                }
+                                                else
+                                                {
+                                                    <div class="no-image-placeholder-small">
+                                                        <i class="fas fa-cogs"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <h6 class="fw-bold mb-1">@part.PartName</h6>
+                                                    <div class="text-muted small">
+                                                        <div>Part #: @part.PartNumber</div>
+                                                        @if (!string.IsNullOrEmpty(part.Compatibility))
+                                                        {
+                                                            <div class="text-info">Compatible: @part.Compatibility</div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@part.BrandName</td>
+                                            <td>
+                                                <span class="fw-bold text-success">$@part.Price.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@(part.StockQuantity > 10 ? "success" : part.StockQuantity > 0 ? "warning" : "danger")">
+                                                    @part.StockQuantity
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (part.IsAvailable && part.StockQuantity > 0)
+                                                {
+                                                    <span class="badge bg-success">Available</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Not Available</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button class="btn btn-outline-info" onclick="viewPartDetails(@part.CarPartId)" title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <a href="@Url.Action("EditCarPart", "Admin", new { id = part.CarPartId })" 
+                                                       class="btn btn-outline-primary" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-danger" onclick="confirmDeletePart(@part.CarPartId, '@part.PartName')" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-cogs fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No car parts found</h5>
+                            <p class="text-muted">Start by adding your first car part to the inventory.</p>
+                            <a href="@Url.Action("AddCarPart", "Admin")" class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i>Add First Part
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.CarParts.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Parts pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- JavaScript for functionality -->
+<script>
+    // Reset filters function
+    function resetFilters() {
+        window.location.href = window.location.pathname;
+    }
+    
+    // Toggle advanced filters
+    function toggleAdvancedFilters() {
+        const advancedFilters = document.getElementById('advancedFilters');
+        if (advancedFilters.style.display === 'none') {
+            advancedFilters.style.display = 'block';
+        } else {
+            advancedFilters.style.display = 'none';
+        }
+    }
+    
+    // View type toggle
+    document.getElementById('gridView').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('gridViewContainer').style.display = 'block';
+            document.getElementById('listViewContainer').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('listView').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('gridViewContainer').style.display = 'none';
+            document.getElementById('listViewContainer').style.display = 'block';
+        }
+    });
+    
+    function viewPartDetails(partId) {
+        // Implementation for viewing part details
+        window.location.href = `/Admin/EditCarPart/${partId}`;
+    }
+    
+    function confirmDeletePart(partId, partName) {
+        if (confirm(`Are you sure you want to delete the part "${partName}"?`)) {
+            // Implementation for deleting part
+            fetch(`/Admin/DeleteCarPart/${partId}`, {
+                method: 'DELETE',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting part: ' + data.message);
+                }
+            });
+        }
+    }
+    
+    function exportData(format) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', format);
+        window.open(`/Admin/ExportCarParts?${params.toString()}`, '_blank');
+    }
+</script>
+
+<style>
+    .part-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .part-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .part-image, .part-image-placeholder {
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .part-image-placeholder {
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .card-actions {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .part-card:hover .card-actions {
+        opacity: 1;
+    }
+    
+    .part-thumbnail {
+        width: 50px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .no-image-placeholder-small {
+        width: 50px;
+        height: 40px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .part-image, .part-image-placeholder {
+            height: 150px;
+        }
+        
+        .card-actions {
+            opacity: 1;
+        }
+    }
+</style>

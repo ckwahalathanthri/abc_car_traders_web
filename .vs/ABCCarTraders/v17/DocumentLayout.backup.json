@@ -1,0 +1,85 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|c:\\users\\chinthaka_w\\documents\\projects_visual_studio\\abccartraders\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|solutionrelative:controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|c:\\users\\chinthaka_w\\documents\\projects_visual_studio\\abccartraders\\views\\admin\\editcarpart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|solutionrelative:views\\admin\\editcarpart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|c:\\users\\chinthaka_w\\documents\\projects_visual_studio\\abccartraders\\views\\admin\\addcarpart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{185FCD4F-C45E-4527-9036-82A9F4DFEB84}|ABCCarTraders.csproj|solutionrelative:views\\admin\\addcarpart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "EditCarPart.cshtml",
+              "DocumentMoniker": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Views\\Admin\\EditCarPart.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\EditCarPart.cshtml",
+              "ToolTip": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Views\\Admin\\EditCarPart.cshtml",
+              "RelativeToolTip": "Views\\Admin\\EditCarPart.cshtml",
+              "ViewState": "AgIAAGABAAAAAAAAAAAnwHEBAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-19T05:47:05.06Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AddCarPart.cshtml",
+              "DocumentMoniker": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Views\\Admin\\AddCarPart.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\AddCarPart.cshtml",
+              "ToolTip": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Views\\Admin\\AddCarPart.cshtml",
+              "RelativeToolTip": "Views\\Admin\\AddCarPart.cshtml",
+              "ViewState": "AgIAADIBAAAAAAAAAAAnwD4BAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-19T05:45:49.254Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AdminController.cs",
+              "ToolTip": "C:\\Users\\chinthaka_w\\Documents\\projects_visual_studio\\ABCCarTraders\\Controllers\\AdminController.cs*",
+              "RelativeToolTip": "Controllers\\AdminController.cs*",
+              "ViewState": "AgIAAD4BAAAAAAAAAAAAAE4BAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-19T05:42:18.875Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

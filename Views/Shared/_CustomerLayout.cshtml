@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Customer Dashboard | ABC Car Traders</title>
+    <link rel="icon" type="image/x-icon" href="~/images/favicon.ico">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Customer Custom CSS -->
+    <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="customer-body">
+    <!-- Customer Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+            <div class="container-fluid">
+                <!-- Brand -->
+                <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Home")">
+                    <i class="fas fa-car me-2 text-warning"></i>ABC Car Traders
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="customerNavbar">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Home")">
+                                <i class="fas fa-home me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                               href="@Url.Action("Dashboard", "Customer")">
+                                <i class="fas fa-tachometer-alt me-1"></i>My Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="ordersDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-shopping-bag me-1"></i>My Orders
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("MyOrders", "Customer")">
+                                    <i class="fas fa-list me-2"></i>All Orders
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("PendingOrders", "Customer")">
+                                    <i class="fas fa-clock me-2"></i>Pending Orders
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("CompletedOrders", "Customer")">
+                                    <i class="fas fa-check-circle me-2"></i>Completed Orders
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("OrderHistory", "Customer")">
+                                    <i class="fas fa-history me-2"></i>Order History
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Cars")">
+                                <i class="fas fa-car me-1"></i>Browse Cars
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "CarParts")">
+                                <i class="fas fa-cogs me-1"></i>Browse Parts
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Search Form -->
+                    <form class="d-flex me-3" asp-action="Search" asp-controller="Home" method="get">
+                        <div class="input-group">
+                            <input class="form-control form-control-sm" type="search" name="searchTerm" placeholder="Search..." aria-label="Search">
+                            <button class="btn btn-outline-light btn-sm" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Right side nav -->
+                    <ul class="navbar-nav">
+                        <!-- Shopping Cart -->
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="@Url.Action("Cart", "Order")">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" id="cartCount">
+                                    @(Context.Session.GetString("CartCount") ?? "0")
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <!-- Wishlist -->
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="@Url.Action("Wishlist", "Customer")">
+                                <i class="fas fa-heart"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="wishlistCount">
+                                    @(Context.Session.GetString("WishlistCount") ?? "0")
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <!-- Customer Profile -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="customerProfileDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>@(Context.Session.GetString("UserName") ?? "Customer")
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("Profile", "Customer")">
+                                    <i class="fas fa-user-edit me-2"></i>My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("MyOrders", "Customer")">
+                                    <i class="fas fa-box me-2"></i>My Orders
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Wishlist", "Customer")">
+                                    <i class="fas fa-heart me-2"></i>My Wishlist
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("ChangePassword", "Account")">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Customer")">
+                                    <i class="fas fa-cog me-2"></i>Account Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <!-- Customer Sidebar -->
+            <div class="col-md-3 col-lg-2 d-none d-md-block">
+                <div class="customer-sidebar bg-light rounded p-3 shadow-sm">
+                    <!-- Customer Welcome Card -->
+                    <div class="welcome-card text-center mb-4">
+                        <div class="avatar-placeholder bg-primary text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Welcome!</h6>
+                        <small class="text-muted">@(Context.Session.GetString("UserName") ?? "Customer")</small>
+                    </div>
+                    
+                    <!-- Quick Navigation -->
+                    <h6 class="fw-bold mb-3 text-muted">Quick Menu</h6>
+                    <nav class="nav flex-column">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                           href="@Url.Action("Dashboard", "Customer")">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "MyOrders" ? "active" : "")" 
+                           href="@Url.Action("MyOrders", "Customer")">
+                            <i class="fas fa-shopping-bag me-2"></i>My Orders
+                        </a>
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")" 
+                           href="@Url.Action("Profile", "Customer")">
+                            <i class="fas fa-user-edit me-2"></i>Profile
+                        </a>
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Wishlist" ? "active" : "")" 
+                           href="@Url.Action("Wishlist", "Customer")">
+                            <i class="fas fa-heart me-2"></i>Wishlist
+                        </a>
+                        <a class="nav-link" href="@Url.Action("Cart", "Order")">
+                            <i class="fas fa-shopping-cart me-2"></i>Shopping Cart
+                        </a>
+                    </nav>
+                    
+                    <hr class="my-3">
+                    
+                    <!-- Quick Stats -->
+                    <h6 class="fw-bold mb-3 text-muted">Quick Stats</h6>
+                    <div class="stat-item mb-2 d-flex justify-content-between">
+                        <small class="text-muted">Total Orders</small>
+                        <span class="badge bg-primary">@(ViewData["TotalOrders"] ?? "0")</span>
+                    </div>
+                    <div class="stat-item mb-2 d-flex justify-content-between">
+                        <small class="text-muted">Cart Items</small>
+                        <span class="badge bg-warning text-dark">@(Context.Session.GetString("CartCount") ?? "0")</span>
+                    </div>
+                    <div class="stat-item mb-2 d-flex justify-content-between">
+                        <small class="text-muted">Wishlist</small>
+                        <span class="badge bg-danger">@(Context.Session.GetString("WishlistCount") ?? "0")</span>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <!-- Quick Actions -->
+                    <h6 class="fw-bold mb-3 text-muted">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Index", "Cars")" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-car me-1"></i>Browse Cars
+                        </a>
+                        <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-cogs me-1"></i>Browse Parts
+                        </a>
+                        <a href="@Url.Action("Cart", "Order")" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-shopping-cart me-1"></i>View Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <!-- Alert Messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["InfoMessage"] != null)
+                {
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>@TempData["InfoMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                <!-- Breadcrumb Navigation -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="@Url.Action("Index", "Home")" class="text-decoration-none">
+                                <i class="fas fa-home me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="@Url.Action("Dashboard", "Customer")" class="text-decoration-none">
+                                <i class="fas fa-user me-1"></i>My Account
+                            </a>
+                        </li>
+                        @if (ViewData["BreadcrumbItems"] != null)
+                        {
+                            @foreach (var item in (List<dynamic>)ViewData["BreadcrumbItems"])
+                            {
+                                @if (item.IsActive)
+                                {
+                                    <li class="breadcrumb-item active" aria-current="page">@item.Title</li>
+                                }
+                                else
+                                {
+                                    <li class="breadcrumb-item">
+                                        <a href="@item.Url" class="text-decoration-none">@item.Title</a>
+                                    </li>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                        }
+                    </ol>
+                </nav>
+                
+                <!-- Page Content -->
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="customer-footer bg-light text-center py-3 mt-5">
+        <div class="container-fluid">
+            <small class="text-muted">
+                &copy; @DateTime.Now.Year ABC Car Traders (Pvt) Ltd. - Customer Dashboard | 
+                <a href="@Url.Action("Contact", "Home")" class="text-decoration-none">Need Help?</a>
+            </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <!-- Customer Custom JS -->
+    <script src="~/js/customer.js" asp-append-version="true"></script>
+    
+    <!-- Shopping Cart functionality -->
+    <script>
+        $(document).ready(function() {
+            // Update cart count periodically
+            function updateCartCount() {
+                $.get('@Url.Action("GetCartCount", "Order")', function(data) {
+                    $('#cartCount').text(data.count);
+                });
+            }
+            
+            // Update cart count every 30 seconds
+            setInterval(updateCartCount, 30000);
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

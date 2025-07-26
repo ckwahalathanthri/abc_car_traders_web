@@ -1,0 +1,550 @@
+﻿@model ABCCarTraders.Models.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-warning text-dark py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-credit-card me-3"></i>Secure Checkout
+                </h1>
+                <p class="lead mb-0">Complete your purchase safely and securely</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="checkout-progress">
+                    <div class="small fw-semibold">Step 2 of 3</div>
+                    <div class="progress mt-1" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: 66%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Checkout Steps -->
+<div class="container mb-4">
+    <div class="checkout-steps">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="step completed">
+                    <div class="step-icon bg-success text-white rounded-circle mb-2">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h6 class="fw-bold">Cart Review</h6>
+                    <p class="text-muted small">Items selected</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step active">
+                    <div class="step-icon bg-warning text-dark rounded-circle mb-2">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h6 class="fw-bold">Payment & Shipping</h6>
+                    <p class="text-muted small">Complete your order</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step">
+                    <div class="step-icon bg-light text-muted rounded-circle mb-2">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h6 class="fw-bold">Confirmation</h6>
+                    <p class="text-muted small">Order completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Messages -->
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="container mb-4">
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle me-2"></i>@Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+}
+
+<!-- Checkout Form -->
+<div class="container">
+    <form asp-action="Checkout" asp-controller="Order" method="post" class="needs-validation" novalidate id="checkoutForm">
+        <div class="row g-4">
+            <!-- Left Column - Forms -->
+            <div class="col-lg-8">
+                <!-- Customer Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>Customer Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1 text-muted"></i>First Name *
+                                </label>
+                                <input asp-for="FirstName" class="form-control" required>
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1 text-muted"></i>Last Name *
+                                </label>
+                                <input asp-for="LastName" class="form-control" required>
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <label asp-for="Email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-1 text-muted"></i>Email Address *
+                                </label>
+                                <input asp-for="Email" type="email" class="form-control" required>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="PhoneNumber" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-1 text-muted"></i>Phone Number
+                                </label>
+                                <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="+94 XX XXX XXXX">
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shipping Address -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-truck me-2"></i>Shipping Address
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="ShippingAddress" class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt me-1 text-muted"></i>Street Address *
+                                </label>
+                                <textarea asp-for="ShippingAddress" class="form-control" rows="3" 
+                                          placeholder="Enter your complete address" required></textarea>
+                                <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label fw-semibold">
+                                    <i class="fas fa-city me-1 text-muted"></i>City *
+                                </label>
+                                <input asp-for="City" class="form-control" required>
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Country" class="form-label fw-semibold">
+                                    <i class="fas fa-globe me-1 text-muted"></i>Country *
+                                </label>
+                                <select asp-for="Country" class="form-select" required>
+                                    <option value="">Select Country</option>
+                                    <option value="Sri Lanka" selected>Sri Lanka</option>
+                                    <option value="India">India</option>
+                                    <option value="Maldives">Maldives</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Country" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Address Options -->
+                        <div class="address-options mt-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="sameAsProfile">
+                                <label class="form-check-label" for="sameAsProfile">
+                                    Use address from my profile
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="saveAddress">
+                                <label class="form-check-label" for="saveAddress">
+                                    Save this address to my profile
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Payment Method
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-methods">
+                            @foreach (var paymentMethod in Model.PaymentMethods)
+                            {
+                                <div class="payment-option mb-3">
+                                    <div class="form-check payment-check">
+                                        <input class="form-check-input" type="radio" name="PaymentMethod" 
+                                               value="@paymentMethod.Value" id="payment@paymentMethod.Value"
+                                               @(paymentMethod.Value == "1" ? "checked" : "")>
+                                        <label class="form-check-label w-100" for="payment@paymentMethod.Value">
+                                            <div class="payment-method-card p-3 border rounded">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="payment-icon me-3">
+                                                        @switch (paymentMethod.Text)
+                                                        {
+                                                            case "Credit Card":
+                                                                <i class="fas fa-credit-card fa-2x text-primary"></i>
+                                                                break;
+                                                            case "Debit Card":
+                                                                <i class="fas fa-university fa-2x text-success"></i>
+                                                                break;
+                                                            case "Bank Transfer":
+                                                                <i class="fas fa-money-check fa-2x text-info"></i>
+                                                                break;
+                                                            case "Cash":
+                                                                <i class="fas fa-money-bill fa-2x text-warning"></i>
+                                                                break;
+                                                            default:
+                                                                <i class="fas fa-credit-card fa-2x text-secondary"></i>
+                                                                break;
+                                                        }
+                                                    </div>
+                                                    <div class="payment-details">
+                                                        <h6 class="fw-bold mb-1">@paymentMethod.Text</h6>
+                                                        <p class="text-muted small mb-0">
+                                                            @switch (paymentMethod.Text)
+                                                            {
+                                                                case "Credit Card":
+                                                                    <span>Visa, MasterCard, American Express</span>
+                                                                    break;
+                                                                case "Debit Card":
+                                                                    <span>Direct payment from your bank account</span>
+                                                                    break;
+                                                                case "Bank Transfer":
+                                                                    <span>Transfer funds directly to our account</span>
+                                                                    break;
+                                                                case "Cash":
+                                                                    <span>Pay cash on delivery (COD)</span>
+                                                                    break;
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                    <div class="payment-security ms-auto">
+                                                        <i class="fas fa-shield-alt text-success"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <!-- Security Notice -->
+                        <div class="security-notice mt-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-lock me-2"></i>
+                                <strong>Secure Payment:</strong> Your payment information is encrypted and secure. 
+                                We never store your credit card details.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Notes -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Order Notes (Optional)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea asp-for="Notes" class="form-control" rows="3" 
+                                  placeholder="Any special instructions for your order..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Order Summary -->
+            <div class="col-lg-4">
+                <div class="order-summary sticky-top" style="top: 20px;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Order Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Order Items Summary -->
+                            <div class="items-summary mb-3">
+                                <h6 class="fw-bold mb-2">Items (@Model.TotalItems)</h6>
+                                <div class="small text-muted">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Subtotal:</span>
+                                        <span>@Model.FormattedSubTotal</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pricing Breakdown -->
+                            <div class="pricing-breakdown">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
+                                    <span class="fw-bold">@Model.FormattedSubTotal</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Shipping:</span>
+                                    <span class="fw-bold">
+                                        @if (Model.ShippingCost == 0)
+                                        {
+                                            <span class="text-success">FREE</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@Model.FormattedShippingCost</span>
+                                        }
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tax (10%):</span>
+                                    <span class="fw-bold">@Model.FormattedTax</span>
+                                </div>
+                                
+                                @if (Model.ShippingCost > 0 && Model.SubTotal > 900)
+                                {
+                                    <div class="shipping-notice alert alert-success small py-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Add @((1000 - Model.SubTotal).ToString("C")) more for free shipping!
+                                    </div>
+                                }
+                                
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="h5 fw-bold">Total:</span>
+                                    <span class="h5 fw-bold text-success">@Model.FormattedGrandTotal</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Place Order Button -->
+                            <div class="place-order">
+                                <button type="submit" class="btn btn-warning btn-lg w-100 mb-3" id="placeOrderBtn">
+                                    <i class="fas fa-lock me-2"></i>Place Order
+                                </button>
+                                <a href="@Url.Action("Cart", "Order")" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Cart
+                                </a>
+                            </div>
+                            
+                            <!-- Trust Badges -->
+                            <div class="trust-badges mt-4 text-center">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <i class="fas fa-shield-alt fa-2x text-success mb-1"></i>
+                                        <div class="small">Secure</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <i class="fas fa-truck fa-2x text-primary mb-1"></i>
+                                        <div class="small">Fast Delivery</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <i class="fas fa-medal fa-2x text-warning mb-1"></i>
+                                        <div class="small">Quality</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Support Contact -->
+                    <div class="support-contact mt-3">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-headset me-2 text-info"></i>Need Help?
+                                </h6>
+                                <p class="small text-muted mb-3">Our customer service team is here to help</p>
+                                <div class="contact-options">
+                                    <a href="tel:+94112345678" class="btn btn-outline-info btn-sm me-2">
+                                        <i class="fas fa-phone me-1"></i>Call Us
+                                    </a>
+                                    <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-envelope me-1"></i>Email
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    }
+    
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 1.2rem;
+    }
+    
+    .step.completed .step-icon {
+        background-color: #28a745 !important;
+    }
+    
+    .step.active .step-icon {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+    
+    .payment-method-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .payment-check input[type="radio"]:checked + label .payment-method-card {
+        border-color: #0d6efd !important;
+        background-color: #f8f9fa;
+    }
+    
+    .payment-method-card:hover {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+    
+    .trust-badges .fa-2x {
+        font-size: 1.5rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .checkout-steps .step {
+            margin-bottom: 2rem;
+        }
+        
+        .order-summary {
+            margin-top: 2rem;
+            position: relative !important;
+            top: auto !important;
+        }
+    }
+</style>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    // Place order button loading state
+    document.getElementById('checkoutForm').addEventListener('submit', function() {
+        const btn = document.getElementById('placeOrderBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        btn.disabled = true;
+    });
+    
+    // Use profile address
+    document.getElementById('sameAsProfile').addEventListener('change', function() {
+        if (this.checked) {
+            // Fill in address from profile (implementation would fetch from server)
+            fetch('@Url.Action("GetUserAddress", "Account")')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelector('textarea[name="ShippingAddress"]').value = data.address;
+                        document.querySelector('input[name="City"]').value = data.city;
+                        document.querySelector('select[name="Country"]').value = data.country;
+                    }
+                });
+        }
+    });
+    
+    // Auto-save form data to localStorage
+    function saveFormData() {
+        const formData = {
+            firstName: document.querySelector('input[name="FirstName"]').value,
+            lastName: document.querySelector('input[name="LastName"]').value,
+            email: document.querySelector('input[name="Email"]').value,
+            phoneNumber: document.querySelector('input[name="PhoneNumber"]').value,
+            shippingAddress: document.querySelector('textarea[name="ShippingAddress"]').value,
+            city: document.querySelector('input[name="City"]').value,
+            country: document.querySelector('select[name="Country"]').value,
+            notes: document.querySelector('textarea[name="Notes"]').value
+        };
+        localStorage.setItem('checkoutFormData', JSON.stringify(formData));
+    }
+    
+    // Load saved form data
+    function loadFormData() {
+        const savedData = localStorage.getItem('checkoutFormData');
+        if (savedData) {
+            const formData = JSON.parse(savedData);
+            Object.keys(formData).forEach(key => {
+                const field = document.querySelector(`[name="${key.charAt(0).toUpperCase() + key.slice(1)}"]`);
+                if (field && !field.value) {
+                    field.value = formData[key];
+                }
+            });
+        }
+    }
+    
+    // Auto-save on input change
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFormData();
+        
+        const formInputs = document.querySelectorAll('input, textarea, select');
+        formInputs.forEach(input => {
+            input.addEventListener('change', saveFormData);
+        });
+    });
+    
+    // Clear saved data on successful submission
+    document.getElementById('checkoutForm').addEventListener('submit', function() {
+        localStorage.removeItem('checkoutFormData');
+    });
+</script>

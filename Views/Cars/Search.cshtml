@@ -1,0 +1,621 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarSearchResultsViewModel
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.SearchTerm) ? $"Search Results for '{Model.SearchTerm}'" : "Car Search Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-primary text-white py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-search me-3"></i>Search Results
+                </h1>
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <p class="lead mb-0">Results for: "<strong>@Model.SearchTerm</strong>"</p>
+                }
+                else
+                {
+                    <p class="lead mb-0">Browse all available cars</p>
+                }
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="search-stats text-white">
+                    <div class="h4 fw-bold mb-1">@Model.TotalResults</div>
+                    <div>cars found</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Search" method="get" class="search-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" name="searchTerm" class="form-control form-control-lg" 
+                                           placeholder="Search cars, brands, models..." 
+                                           value="@Model.SearchTerm" autocomplete="off" id="searchInput">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="category" class="form-select form-select-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="sedan">Sedans</option>
+                                    <option value="suv">SUVs</option>
+                                    <option value="hatchback">Hatchbacks</option>
+                                    <option value="coupe">Coupes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Filters -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="quick-filters d-flex flex-wrap gap-2">
+                                    <span class="me-3 fw-semibold">Quick Filters:</span>
+                                    <a href="?searchTerm=@Model.SearchTerm&fuelType=petrol" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-gas-pump me-1"></i>Petrol
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchTerm&fuelType=diesel" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-gas-pump me-1"></i>Diesel
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchTerm&transmission=automatic" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-cogs me-1"></i>Automatic
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchTerm&transmission=manual" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-cogs me-1"></i>Manual
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchTerm&year=2020-2024" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-calendar me-1"></i>2020+
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Suggestions (if no results) -->
+@if (Model.TotalResults == 0 && !string.IsNullOrEmpty(Model.SearchTerm))
+{
+    <div class="container mb-4">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>No results found for "@Model.SearchTerm"
+            </h5>
+            <p class="mb-3">Try these suggestions to find what you're looking for:</p>
+            <ul class="mb-3">
+                <li>Check your spelling and try again</li>
+                <li>Use more general terms (e.g., "Toyota" instead of "Toyota Camry 2023")</li>
+                <li>Try searching by brand, model, or year</li>
+                <li>Browse our categories below</li>
+            </ul>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="@Url.Action("Index", "Cars")" class="btn btn-primary">
+                    <i class="fas fa-car me-2"></i>Browse All Cars
+                </a>
+                <a href="@Url.Action("Category", "Cars", new { id = 1 })" class="btn btn-outline-primary">
+                    <i class="fas fa-tags me-2"></i>View Categories
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Results Section -->
+@if (Model.TotalResults > 0)
+{
+    <div class="container">
+        <!-- Results Header -->
+        <div class="results-header mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="results-info mb-2">
+                    <h4 class="mb-0">
+                        @Model.Cars.Count of @Model.TotalResults cars
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                        {
+                            <span class="text-muted">matching "@Model.SearchTerm"</span>
+                        }
+                    </h4>
+                </div>
+                
+                <div class="d-flex gap-2 align-items-center mb-2">
+                    <!-- View Toggle -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" 
+                                onclick="toggleView('grid')" id="gridViewBtn">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                onclick="toggleView('list')" id="listViewBtn">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="sortResults(this.value)">
+                        <option value="">Sort By Relevance</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="year_desc">Year: Newest First</option>
+                        <option value="year_asc">Year: Oldest First</option>
+                        <option value="mileage_asc">Mileage: Low to High</option>
+                        <option value="brand_asc">Brand: A to Z</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Active Filters -->
+            <div class="active-filters">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                    {
+                        <span class="badge bg-primary">
+                            Search: @Model.SearchTerm
+                            <a href="@Url.Action("Search")" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                    }
+                    <!-- Additional filter badges would go here based on URL parameters -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Results Grid -->
+        <div id="searchResults">
+            <div class="cars-grid" id="gridContainer">
+                <div class="row g-4">
+                    @foreach (var car in Model.Cars)
+                    {
+                        <div class="col-xl-3 col-lg-4 col-md-6">
+                            <div class="car-card card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <img src="@(car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                         class="card-img-top car-image" alt="@car.BrandName @car.Model">
+                                    
+                                    <!-- Year Badge -->
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                        @car.Year
+                                    </span>
+                                    
+                                    <!-- Stock Status -->
+                                    @if (car.StockQuantity == 0)
+                                    {
+                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                            Out of Stock
+                                        </span>
+                                    }
+                                    else if (car.StockQuantity <= 3)
+                                    {
+                                        <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                            Low Stock
+                                        </span>
+                                    }
+                                    
+                                    <!-- Relevance Score (if search term exists) -->
+                                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                                    {
+                                        <div class="relevance-indicator position-absolute bottom-0 start-0 m-2">
+                                            <span class="badge bg-dark bg-opacity-75">
+                                                <i class="fas fa-star text-warning me-1"></i>Match
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="car-header mb-2">
+                                        <h5 class="card-title mb-1">
+                                            @Html.Raw(HighlightSearchTerm(car.BrandName + " " + car.Model, Model.SearchTerm))
+                                        </h5>
+                                        <span class="badge bg-light text-dark">@car.CategoryName</span>
+                                    </div>
+                                    
+                                    <div class="car-details mb-3">
+                                        <div class="row g-2 text-muted small">
+                                            <div class="col-6">
+                                                <i class="fas fa-gas-pump me-1"></i>@car.FuelType
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fas fa-cogs me-1"></i>@car.Transmission
+                                            </div>
+                                            @if (car.Mileage.HasValue)
+                                            {
+                                                <div class="col-6">
+                                                    <i class="fas fa-tachometer-alt me-1"></i>@car.Mileage.Value.ToString("N0") km
+                                                </div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(car.Color))
+                                            {
+                                                <div class="col-6">
+                                                    <i class="fas fa-palette me-1"></i>@car.Color
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="car-price mb-3">
+                                        <h4 class="text-success fw-bold mb-0">@car.FormattedPrice</h4>
+                                    </div>
+                                    
+                                    <div class="car-actions">
+                                        <div class="row g-2">
+                                            <div class="col-8">
+                                                <a href="@Url.Action("Details", new { id = car.CarId })" 
+                                                   class="btn btn-primary w-100">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                            </div>
+                                            <div class="col-4">
+                                                @if (car.IsAvailable && car.StockQuantity > 0)
+                                                {
+                                                    <button type="button" class="btn btn-outline-success w-100" 
+                                                            onclick="addToCart(@car.CarId)" title="Add to Cart">
+                                                        <i class="fas fa-cart-plus"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-secondary w-100" disabled>
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- List View (Hidden by default) -->
+            <div class="cars-list d-none" id="listContainer">
+                @foreach (var car in Model.Cars)
+                {
+                    <div class="car-list-item card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <img src="@(car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                         class="img-fluid rounded" alt="@car.BrandName @car.Model"
+                                         style="height: 120px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold">
+                                        @Html.Raw(HighlightSearchTerm(car.BrandName + " " + car.Model, Model.SearchTerm))
+                                    </h5>
+                                    <div class="car-specs mb-2">
+                                        <span class="badge bg-primary me-1">@car.Year</span>
+                                        <span class="badge bg-light text-dark me-1">@car.CategoryName</span>
+                                        <span class="badge bg-secondary me-1">@car.FuelType</span>
+                                        <span class="badge bg-info text-white">@car.Transmission</span>
+                                    </div>
+                                    <div class="car-features text-muted small">
+                                        @if (car.Mileage.HasValue)
+                                        {
+                                            <span class="me-3"><i class="fas fa-tachometer-alt me-1"></i>@car.Mileage.Value.ToString("N0") km</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(car.Color))
+                                        {
+                                            <span class="me-3"><i class="fas fa-palette me-1"></i>@car.Color</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(car.EngineCapacity))
+                                        {
+                                            <span><i class="fas fa-engine me-1"></i>@car.EngineCapacity</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <h4 class="text-success fw-bold mb-3">@car.FormattedPrice</h4>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a href="@Url.Action("Details", new { id = car.CarId })" 
+                                           class="btn btn-primary">View Details</a>
+                                        @if (car.IsAvailable && car.StockQuantity > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    onclick="addToCart(@car.CarId)">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+        {
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @if (Model.Pagination.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?searchTerm=@Model.SearchTerm&page=@(Model.Pagination.CurrentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    
+                    @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); 
+                          i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); 
+                          i++)
+                    {
+                        <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="?searchTerm=@Model.SearchTerm&page=@i">@i</a>
+                        </li>
+                    }
+                    
+                    @if (Model.Pagination.CurrentPage < Model.Pagination.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?searchTerm=@Model.SearchTerm&page=@(Model.Pagination.CurrentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+        
+        <!-- Search Tips -->
+        <div class="search-tips mt-5">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>Search Tips
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use specific brand names (Toyota, Honda, BMW)</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Include model names for better results</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Try different spelling variations</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use year ranges (2020-2023)</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Search by fuel type or transmission</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Browse categories for more options</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    public string HighlightSearchTerm(string text, string searchTerm)
+    {
+        if (string.IsNullOrEmpty(searchTerm) || string.IsNullOrEmpty(text))
+            return text;
+            
+        var words = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var word in words)
+        {
+            if (word.Length >= 2)
+            {
+                text = System.Text.RegularExpressions.Regex.Replace(
+                    text, 
+                    $"({System.Text.RegularExpressions.Regex.Escape(word)})", 
+                    "<mark class=\"bg-warning\">$1</mark>", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+            }
+        }
+        return text;
+    }
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    }
+    
+    .car-card {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .car-image {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .search-form {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    .quick-filters .btn {
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+    
+    .active-filters .badge {
+        font-size: 0.875rem;
+        padding: 0.5em 0.75em;
+        border-radius: 8px;
+    }
+    
+    .relevance-indicator {
+        opacity: 0.9;
+    }
+    
+    mark {
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    
+    .car-list-item img {
+        max-width: 150px;
+    }
+    
+    .search-tips {
+        border-top: 1px solid #dee2e6;
+        padding-top: 2rem;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    @@media (max-width: 768px) {
+        .car-image {
+            height: 180px;
+        }
+        
+        .search-stats {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .quick-filters {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function toggleView(viewType) {
+        const gridContainer = document.getElementById('gridContainer');
+        const listContainer = document.getElementById('listContainer');
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
+        
+        if (viewType === 'grid') {
+            gridContainer.classList.remove('d-none');
+            listContainer.classList.add('d-none');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        } else {
+            gridContainer.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+        }
+        
+        localStorage.setItem('searchViewPreference', viewType);
+    }
+    
+    function sortResults(sortBy) {
+        if (sortBy) {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', sortBy);
+            window.location.href = url.toString();
+        }
+    }
+    
+    function addToCart(carId) {
+        if (!@(Context.Session.GetString("UserId") != null ? "true" : "false")) {
+            window.location.href = '@Url.Action("Login", "Account")';
+            return;
+        }
+        
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ itemId: carId, itemType: 'Car', quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Car added to cart successfully!');
+                updateCartCount();
+            } else {
+                alert('Error adding car to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the car to cart.');
+        });
+    }
+    
+    function updateCartCount() {
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+    
+    // Load user's view preference
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewPreference = localStorage.getItem('searchViewPreference') || 'grid';
+        toggleView(viewPreference);
+        
+        // Auto-focus search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && !searchInput.value) {
+            searchInput.focus();
+        }
+    });
+    
+    // Search suggestions/autocomplete (basic implementation)
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                // Implementation for search suggestions would go here
+                // This could call an API endpoint to get suggestions
+            });
+        }
+    });
+</script>

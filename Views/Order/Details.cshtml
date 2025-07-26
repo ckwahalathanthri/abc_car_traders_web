@@ -1,0 +1,615 @@
+﻿@model ABCCarTraders.Models.ViewModels.OrderDetailsViewModel
+@{
+    ViewData["Title"] = $"Order Details - #{Model.Order.OrderNumber}";
+    ViewData["ItemName"] = $"Order #{Model.Order.OrderNumber}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Breadcrumb -->
+@await Html.PartialAsync("_BreadcrumbNavigation")
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-primary text-white py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-file-invoice me-3"></i>Order Details
+                </h1>
+                <p class="lead mb-0">Complete information about your order</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="order-actions">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-light" onclick="printOrder()" title="Print Order">
+                            <i class="fas fa-print"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" onclick="downloadInvoice()" title="Download Invoice">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" onclick="shareOrder()" title="Share Order">
+                            <i class="fas fa-share"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row g-4">
+        <!-- Left Column - Order Information -->
+        <div class="col-lg-8">
+            <!-- Order Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-hashtag me-2"></i>Order #@Model.Order.OrderNumber
+                        </h5>
+                        <span class="badge bg-@Model.Order.StatusColor fs-6">
+                            @Model.Order.OrderStatus
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-semibold">Order Date</label>
+                            <div class="fw-bold">@Model.Order.FormattedOrderDate</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-semibold">Last Updated</label>
+                            <div class="fw-bold">@Model.Order.FormattedUpdatedAt</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-semibold">Payment Method</label>
+                            <div class="fw-bold">@Model.Order.PaymentMethod</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-semibold">Payment Status</label>
+                            <span class="badge bg-@Model.Order.PaymentStatusColor">@Model.Order.PaymentStatus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Items Ordered (@Model.Order.TotalItems)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Item</th>
+                                    <th class="text-center">Type</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end pe-3">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr class="order-item">
+                                        <td class="ps-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="item-image me-3">
+                                                    @if (!string.IsNullOrEmpty(item.ItemImageUrl))
+                                                    {
+                                                        <img src="@item.ItemImageUrl" alt="@item.ItemName" 
+                                                             class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="placeholder-image bg-light rounded d-flex align-items-center justify-content-center" 
+                                                             style="width: 50px; height: 50px;">
+                                                            <i class="fas fa-@(item.ItemType == ABCCarTraders.Models.ItemType.Car ? "car" : "cogs") text-muted"></i>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="item-details">
+                                                    <h6 class="fw-bold mb-1">@item.ItemName</h6>
+                                                    @if (!string.IsNullOrEmpty(item.ItemDescription))
+                                                    {
+                                                        <p class="text-muted small mb-1">@(item.ItemDescription.Length > 50 ? item.ItemDescription.Substring(0, 50) + "..." : item.ItemDescription)</p>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.PartNumber))
+                                                    {
+                                                        <div class="text-muted small">
+                                                            <i class="fas fa-barcode me-1"></i>Part #: @item.PartNumber
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-@(item.ItemType == ABCCarTraders.Models.ItemType.Car ? "primary" : "success")">
+                                                @item.OrderItem.ItemTypeName
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="quantity-badge badge bg-light text-dark">
+                                                @item.OrderItem.Quantity
+                                            </span>
+                                        </td>
+                                        <td class="text-end">@item.OrderItem.FormattedUnitPrice</td>
+                                        <td class="text-end pe-3 fw-bold">@item.OrderItem.FormattedTotalPrice</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold">Order Total:</td>
+                                    <td class="text-end pe-3 fw-bold text-success fs-5">@Model.Order.FormattedTotalAmount</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Address -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>Shipping Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-semibold">Delivery Address</label>
+                            <div class="shipping-address">
+                                @if (!string.IsNullOrEmpty(Model.Order.ShippingAddress))
+                                {
+                                    <address class="mb-0">
+                                        @Html.Raw(Model.Order.ShippingAddress.Replace("\n", "<br>"))
+                                    </address>
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0">Address information not available</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-semibold">Estimated Delivery</label>
+                            <div class="delivery-info">
+                                <div class="mb-2">
+                                    <i class="fas fa-calendar-alt text-success me-2"></i>
+                                    <span class="fw-semibold">@DateTime.Now.AddDays(7).ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <div class="tracking-number">
+                                    <small class="text-muted">
+                                        Tracking: <strong>ABC@(Model.Order.OrderNumber.Replace("-", ""))</strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Notes -->
+            @if (!string.IsNullOrEmpty(Model.Order.Notes))
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Order Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Model.Order.Notes</p>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Right Column - Actions & Status -->
+        <div class="col-lg-4">
+            <!-- Order Actions -->
+            <div class="order-actions-card mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Order Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            @if (Model.CanCancel)
+                            {
+                                <button type="button" class="btn btn-danger" onclick="cancelOrder()">
+                                    <i class="fas fa-times me-2"></i>Cancel Order
+                                </button>
+                            }
+                            
+                            @if (Model.Order.OrderStatus == ABCCarTraders.Models.ViewModels.OrderStatus.Delivered)
+                            {
+                                <button type="button" class="btn btn-success" onclick="reorderItems()">
+                                    <i class="fas fa-redo me-2"></i>Reorder Items
+                                </button>
+                            }
+                            
+                            <button type="button" class="btn btn-info" onclick="contactSupport()">
+                                <i class="fas fa-headset me-2"></i>Contact Support
+                            </button>
+                            
+                            <button type="button" class="btn btn-outline-primary" onclick="downloadInvoice()">
+                                <i class="fas fa-file-pdf me-2"></i>Download Invoice
+                            </button>
+                            
+                            <a href="@Url.Action("MyOrders", "Customer")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Status Timeline -->
+            <div class="order-status-timeline mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-route me-2"></i>Order Progress
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-timeline">
+                            @{
+                                var statuses = new List<(string Status, string Icon, bool IsActive, bool IsCompleted)>
+                                {
+                                                        ("Order Placed", "fa-shopping-cart", Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Pending, true),
+                                                        ("Order Confirmed", "fa-check-circle", Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Confirmed, Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Confirmed),
+                                                        ("Processing", "fa-cogs", Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Processing, Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Processing),
+                                                        ("Shipped", "fa-truck", Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Shipped, Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Shipped),
+                                                        ("Delivered", "fa-home", Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Delivered, Model.Order.OrderStatus >= ABCCarTraders.Models.ViewModels.OrderStatus.Delivered)
+                                };
+                            }
+                            
+                            @foreach (var (status, icon, isActive, isCompleted) in statuses)
+                            {
+                                <div class="timeline-step @(isCompleted ? "completed" : isActive ? "active" : "")">
+                                    <div class="timeline-marker">
+                                        <i class="fas @icon"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold mb-1">@status</h6>
+                                        @if (isCompleted)
+                                        {
+                                            <small class="text-success">
+                                                <i class="fas fa-check me-1"></i>Completed
+                                            </small>
+                                        }
+                                        else if (isActive)
+                                        {
+                                            <small class="text-warning">
+                                                <i class="fas fa-clock me-1"></i>In Progress
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">
+                                                <i class="fas fa-circle me-1"></i>Pending
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.Order.OrderStatus == ABCCarTraders.Models.ViewModels.OrderStatus.Cancelled)
+                            {
+                                <div class="timeline-step cancelled">
+                                    <div class="timeline-marker bg-danger">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold mb-1 text-danger">Order Cancelled</h6>
+                                        <small class="text-danger">
+                                            <i class="fas fa-times me-1"></i>Cancelled
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Information -->
+            <div class="customer-info mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2 text-dark"></i>Customer Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="customer-details">
+                            <div class="mb-2">
+                                <label class="small text-muted fw-semibold">Customer Name</label>
+                                <div class="fw-bold">@Model.Order.CustomerName</div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="small text-muted fw-semibold">Email Address</label>
+                                <div>@Model.Order.CustomerEmail</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Contact -->
+            <div class="support-contact">
+                <div class="card bg-light border-0">
+                    <div class="card-body text-center">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-question-circle me-2 text-info"></i>Need Help?
+                        </h6>
+                        <p class="small text-muted mb-3">Have questions about your order?</p>
+                        <div class="support-options">
+                            <a href="tel:+94112345678" class="btn btn-outline-primary btn-sm me-2">
+                                <i class="fas fa-phone me-1"></i>Call
+                            </a>
+                            <a href="mailto:support@abccartraders.com" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    }
+    
+    .order-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .item-image img,
+    .placeholder-image {
+        border: 1px solid #dee2e6;
+    }
+    
+    .status-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-step {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-step:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        border: 2px solid #fff;
+    }
+    
+    .timeline-step.completed .timeline-marker {
+        background: #28a745;
+        color: white;
+    }
+    
+    .timeline-step.active .timeline-marker {
+        background: #ffc107;
+        color: #000;
+    }
+    
+    .timeline-step.cancelled .timeline-marker {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 0.25rem;
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .quantity-badge {
+        font-size: 0.875rem;
+        padding: 0.4em 0.6em;
+    }
+    
+    @@media (max-width: 768px) {
+        .status-timeline {
+            padding-left: 1.5rem;
+        }
+        
+        .timeline-marker {
+            left: -1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        
+        .order-actions .btn-group {
+            flex-direction: column;
+        }
+        
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+    }
+</style>
+
+<script>
+    function cancelOrder() {
+        if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+            fetch('@Url.Action("CancelOrder", "Order")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ orderId: @Model.Order.OrderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Order cancelled successfully.');
+                    location.reload();
+                } else {
+                    alert('Error cancelling order: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while cancelling the order.');
+            });
+        }
+    }
+    
+    function reorderItems() {
+        if (confirm('Add all items from this order to your cart?')) {
+            fetch('@Url.Action("Reorder", "Order")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ orderId: @Model.Order.OrderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Items added to cart successfully!');
+                    window.location.href = '@Url.Action("Cart", "Order")';
+                } else {
+                    alert('Error reordering: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while reordering.');
+            });
+        }
+    }
+    
+    function contactSupport() {
+        const orderNumber = '@Model.Order.OrderNumber';
+        const subject = `Order Inquiry - ${orderNumber}`;
+        const body = `Hello,\n\nI have a question about my order ${orderNumber}.\n\nPlease provide assistance.\n\nThank you.`;
+        window.location.href = `mailto:support@abccartraders.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+    
+    function downloadInvoice() {
+        const orderId = @Model.Order.OrderId;
+        window.open(`@Url.Action("DownloadInvoice", "Order")?orderId=${orderId}`, '_blank');
+    }
+    
+    function printOrder() {
+        window.print();
+    }
+    
+    function shareOrder() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'ABC Car Traders Order',
+                text: `Order #@Model.Order.OrderNumber - @Model.Order.FormattedTotalAmount`,
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Order link copied to clipboard!');
+            });
+        }
+    }
+    
+    // Auto-refresh order status every 30 seconds
+    setInterval(function() {
+        fetch(`@Url.Action("GetOrderStatus", "Order")?orderId=@Model.Order.OrderId`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== '@Model.Order.OrderStatus.ToString()') {
+                    // Status changed, reload page
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.debug('Auto-refresh failed:', error);
+            });
+    }, 30000);
+    
+    // Print-specific styles
+    window.addEventListener('beforeprint', function() {
+        document.body.classList.add('printing');
+    });
+    
+    window.addEventListener('afterprint', function() {
+        document.body.classList.remove('printing');
+    });
+</script>
+
+<style media="print">
+    .order-actions-card,
+    .page-header .order-actions,
+    .btn,
+    .card-header {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .container {
+        max-width: 100% !important;
+    }
+    
+    .col-lg-4 {
+        display: none !important;
+    }
+    
+    .col-lg-8 {
+        width: 100% !important;
+    }
+</style>

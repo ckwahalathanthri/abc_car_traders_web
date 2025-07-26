@@ -1,0 +1,597 @@
+﻿@model ABCCarTraders.Models.ViewModels.OrderListViewModel
+@{
+    ViewData["Title"] = "Manage Orders";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="manage-orders-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-shopping-cart me-2 text-warning"></i>Manage Orders
+                    </h1>
+                    <p class="text-muted mb-0">Total: @Model.TotalOrders orders | Pending: @Model.PendingOrders | Revenue: $@Model.TotalRevenue.ToString("N2")</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderStatsModal">
+                        <i class="fas fa-chart-line me-1"></i>Analytics
+                    </button>
+                    <button class="btn btn-outline-success" onclick="exportOrders()">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning text-white">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="text-muted mb-1">Pending Orders</h6>
+                            <h4 class="fw-bold text-dark mb-0">@Model.PendingOrders</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info text-white">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="text-muted mb-1">Processing</h6>
+                            <h4 class="fw-bold text-dark mb-0">@Model.Orders.Count(o => o.Status == Models.ViewModels.OrderStatus.Processing)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success text-white">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="text-muted mb-1">Completed</h6>
+                            <h4 class="fw-bold text-dark mb-0">@Model.CompletedOrders</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-danger text-white">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="text-muted mb-1">Cancelled</h6>
+                            <h4 class="fw-bold text-dark mb-0">@Model.Orders.Count(o => o.Status == Models.ViewModels.OrderStatus.Cancelled)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Order number, customer name..." 
+                                       value="@Context.Request.Query["search"]">
+                            </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <select class="form-select" name="status">
+                                <option value="">All Status</option>
+                                @foreach (var status in Model.OrderStatuses)
+                                {
+                                    <option value="@status.Value" selected="@(Context.Request.Query["status"] == status.Value ? "selected" : null)">@status.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <select class="form-select" name="paymentStatus">
+                                <option value="">All Payments</option>
+                                @foreach (var paymentStatus in Model.PaymentStatuses)
+                                {
+                                    <option value="@paymentStatus.Value" selected="@(Context.Request.Query["paymentStatus"] == paymentStatus.Value ? "selected" : null)">@paymentStatus.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <input type="date" class="form-control" name="dateFrom" 
+                                   value="@Context.Request.Query["dateFrom"]" title="From Date">
+                        </div>
+                        <div class="col-lg-2">
+                            <input type="date" class="form-control" name="dateTo" 
+                                   value="@Context.Request.Query["dateTo"]" title="To Date">
+                        </div>
+                        <div class="col-lg-1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="card-title fw-bold mb-0">Orders Management</h6>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="bulkUpdateStatus()">
+                            <i class="fas fa-edit me-1"></i>Bulk Update
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="printOrderLabels()">
+                            <i class="fas fa-print me-1"></i>Print Labels
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Orders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="ordersTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">
+                                            <input type="checkbox" id="selectAllOrders" class="form-check-input">
+                                        </th>
+                                        <th>Order</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Amount</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th width="120">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.Orders)
+                                    {
+                                        <tr class="order-row" data-order-id="@order.OrderId">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input order-checkbox" value="@order.OrderId">
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <h6 class="fw-bold mb-1 text-primary">#@order.OrderNumber</h6>
+                                                    <small class="text-muted">ID: @order.OrderId</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <h6 class="fw-bold mb-1">@order.CustomerName</h6>
+                                                    <small class="text-muted">@order.CustomerEmail</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <span class="badge bg-info">@order.TotalItems items</span>
+                                                    <div class="small text-muted mt-1">
+                                                        @{
+                                                            var hasCars = order.OrderItems.Any(oi => oi.ItemType == ItemType.Car);
+                                                            var hasParts = order.OrderItems.Any(oi => oi.ItemType == ItemType.CarPart);
+                                                        }
+                                                        @if (hasCars)
+                                                        {
+                                                            <span class="me-2"><i class="fas fa-car me-1"></i>Cars</span>
+                                                        }
+                                                        @if (hasParts)
+                                                        {
+                                                            <span><i class="fas fa-cogs me-1"></i>Parts</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold text-success">$@order.TotalAmount.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@(order.PaymentStatus == Models.ViewModels.PaymentStatus.Paid ? "success" :
+                                                                       order.PaymentStatus == Models.ViewModels.PaymentStatus.Pending ? "warning" :
+                                                                       order.PaymentStatus == Models.ViewModels.PaymentStatus.Failed ? "danger" : "secondary")">
+                                                    @order.PaymentStatus
+                                                </span>
+                                                <div class="small text-muted mt-1">@order.PaymentMethod</div>
+                                            </td>
+                                            <td>
+                                                <div class="status-container">
+                                                    <select class="form-select form-select-sm status-select" 
+                                                            data-order-id="@order.OrderId" 
+                                                            data-current-status="@order.OrderStatus">
+                                                        @foreach (var status in Model.OrderStatuses)
+                                                        {
+                                                            <option value="@status.Value" selected="@(order.OrderStatus.ToString() == status.Value ? "selected" : null)">@status.Text</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">@order.OrderDate.ToString("MMM dd")</div>
+                                                    <small class="text-muted">@order.OrderDate.ToString("yyyy HH:mm")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                            data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" 
+                                                               onclick="viewOrderDetails(@order.OrderId)">
+                                                                <i class="fas fa-eye me-2"></i>View Details
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" 
+                                                               onclick="printOrderInvoice(@order.OrderId)">
+                                                                <i class="fas fa-file-invoice me-2"></i>Print Invoice
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" 
+                                                               onclick="sendOrderUpdate(@order.OrderId)">
+                                                                <i class="fas fa-envelope me-2"></i>Send Update
+                                                            </a>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="@Url.Action("ManageCustomers", "Admin", new { customerId = order.UserId })">
+                                                                <i class="fas fa-user me-2"></i>View Customer
+                                                            </a>
+                                                        </li>
+                                                        @if (order.Status != Models.ViewModels.OrderStatus.Cancelled && order.Status != Models.ViewModels.OrderStatus.Delivered)
+                                                        {
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <a class="dropdown-item text-danger" href="javascript:void(0)" 
+                                                                   onclick="confirmCancelOrder(@order.OrderId, '@order.OrderNumber')">
+                                                                    <i class="fas fa-times me-2"></i>Cancel Order
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No orders found</h5>
+                            <p class="text-muted">No orders match your search criteria.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.Orders.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Orders pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Cancel Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel order <strong id="orderNumberToCancel"></strong>?</p>
+                <div class="mb-3">
+                    <label class="form-label">Cancellation Reason</label>
+                    <select class="form-select" id="cancellationReason">
+                        <option value="">Select reason...</option>
+                        <option value="Customer Request">Customer Request</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                        <option value="Payment Issues">Payment Issues</option>
+                        <option value="Shipping Issues">Shipping Issues</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="cancellationNotes" rows="3" 
+                              placeholder="Optional cancellation notes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" onclick="cancelOrder()">
+                    <i class="fas fa-times me-1"></i>Cancel Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .status-select {
+        min-width: 120px;
+    }
+    
+    .status-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .order-row:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+        
+        .status-select {
+            min-width: 100px;
+        }
+    }
+</style>
+
+<script>
+    let orderToCancel = null;
+    
+    // Status change handling
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.dataset.orderId;
+            const newStatus = this.value;
+            const currentStatus = this.dataset.currentStatus;
+            
+            if (newStatus !== currentStatus) {
+                updateOrderStatus(orderId, newStatus, this);
+            }
+        });
+    });
+    
+    function updateOrderStatus(orderId, newStatus, selectElement) {
+        fetch(`/Admin/UpdateOrderStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ orderId: orderId, status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                selectElement.dataset.currentStatus = newStatus;
+                showNotification('Order status updated successfully', 'success');
+            } else {
+                // Revert to previous status
+                selectElement.value = selectElement.dataset.currentStatus;
+                showNotification('Error updating order status: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            selectElement.value = selectElement.dataset.currentStatus;
+            showNotification('An error occurred while updating order status', 'error');
+        });
+    }
+    
+    function viewOrderDetails(orderId) {
+        fetch(`/Admin/GetOrderDetails/${orderId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('orderDetailsContent').innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading order details.');
+            });
+    }
+    
+    function confirmCancelOrder(orderId, orderNumber) {
+        orderToCancel = orderId;
+        document.getElementById('orderNumberToCancel').textContent = orderNumber;
+        const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+        modal.show();
+    }
+    
+    function cancelOrder() {
+        const reason = document.getElementById('cancellationReason').value;
+        const notes = document.getElementById('cancellationNotes').value;
+        
+        if (!reason) {
+            alert('Please select a cancellation reason.');
+            return;
+        }
+        
+        if (orderToCancel) {
+            fetch(`/Admin/CancelOrder/${orderToCancel}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ reason: reason, notes: notes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error cancelling order: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while cancelling the order.');
+            });
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+        modal.hide();
+    }
+    
+    function printOrderInvoice(orderId) {
+        window.open(`/Admin/PrintOrderInvoice/${orderId}`, '_blank');
+    }
+    
+    function sendOrderUpdate(orderId) {
+        fetch(`/Admin/SendOrderUpdate/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Order update sent to customer', 'success');
+            } else {
+                showNotification('Error sending order update: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while sending order update', 'error');
+        });
+    }
+    
+    function exportOrders() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', 'excel');
+        window.open(`/Admin/ExportOrders?${params.toString()}`, '_blank');
+    }
+    
+    function showNotification(message, type) {
+        // Simple notification system
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                 style="top: 20px; right: 20px; z-index: 9999;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', alertHtml);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+</script>

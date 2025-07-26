@@ -1,0 +1,528 @@
+﻿@model BreadcrumbViewModel
+
+@{
+    var breadcrumbs = Model?.Items ?? new List<BreadcrumbItem>();
+    
+    // Auto-generate breadcrumbs if none provided
+    if (!breadcrumbs.Any())
+    {
+        breadcrumbs = GenerateAutoBreadcrumbs();
+    }
+    
+    // Don't show breadcrumbs if there's only the home item
+    if (breadcrumbs.Count <= 1)
+    {
+        return;
+    }
+}
+
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="breadcrumb-nav @(Model?.CssClass ?? "")">
+    <div class="container">
+        <ol class="breadcrumb @(Model?.BreadcrumbClass ?? "")">
+            
+            @foreach (var (item, index) in breadcrumbs.Select((item, index) => (item, index)))
+            {
+                @if (index == breadcrumbs.Count - 1)
+                {
+                    <!-- Current/Active Item -->
+                    <li class="breadcrumb-item active" aria-current="page">
+                        @if (!string.IsNullOrEmpty(item.Icon))
+                        {
+                            <i class="@item.Icon me-1"></i>
+                        }
+                        @item.Title
+                    </li>
+                }
+                else
+                {
+                    <!-- Clickable Item -->
+                    <li class="breadcrumb-item">
+                        @if (!string.IsNullOrEmpty(item.Url))
+                        {
+                            <a href="@item.Url" class="text-decoration-none @item.CssClass" title="@item.Title">
+                                @if (!string.IsNullOrEmpty(item.Icon))
+                                {
+                                    <i class="@item.Icon me-1"></i>
+                                }
+                                @item.Title
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="@item.CssClass">
+                                @if (!string.IsNullOrEmpty(item.Icon))
+                                {
+                                    <i class="@item.Icon me-1"></i>
+                                }
+                                @item.Title
+                            </span>
+                        }
+                    </li>
+                }
+                
+                <!-- Custom Separator -->
+                @if (index < breadcrumbs.Count - 1 && !string.IsNullOrEmpty(Model?.CustomSeparator))
+                {
+                    <li class="breadcrumb-separator">
+                        @Html.Raw(Model.CustomSeparator)
+                    </li>
+                }
+            }
+            
+        </ol>
+        
+        <!-- Additional Actions -->
+        @if (Model?.ShowBackButton == true)
+        {
+            <div class="breadcrumb-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </button>
+            </div>
+        }
+        
+        <!-- Page Actions -->
+        @if (Model?.Actions?.Any() == true)
+        {
+            <div class="breadcrumb-actions ms-auto">
+                @foreach (var action in Model.Actions)
+                {
+                    @if (!string.IsNullOrEmpty(action.Url))
+                    {
+                        <a href="@action.Url" class="btn @action.CssClass me-2" title="@action.Title">
+                            @if (!string.IsNullOrEmpty(action.Icon))
+                            {
+                                <i class="@action.Icon me-1"></i>
+                            }
+                            @action.Title
+                        </a>
+                    }
+                    else if (!string.IsNullOrEmpty(action.OnClick))
+                    {
+                        <button type="button" class="btn @action.CssClass me-2" onclick="@action.OnClick" title="@action.Title">
+                            @if (!string.IsNullOrEmpty(action.Icon))
+                            {
+                                <i class="@action.Icon me-1"></i>
+                            }
+                            @action.Title
+                        </button>
+                    }
+                }
+            </div>
+        }
+    </div>
+</nav>
+
+@functions {
+    List<BreadcrumbItem> GenerateAutoBreadcrumbs()
+    {
+        var items = new List<BreadcrumbItem>();
+        var controller = ViewContext.RouteData.Values["Controller"]?.ToString();
+        var action = ViewContext.RouteData.Values["Action"]?.ToString();
+        var area = ViewContext.RouteData.Values["Area"]?.ToString();
+        
+        // Home
+        items.Add(new BreadcrumbItem
+        {
+            Title = "Home",
+            Url = Url.Action("Index", "Home"),
+            Icon = "fas fa-home"
+        });
+        
+        // Area (if applicable)
+        if (!string.IsNullOrEmpty(area))
+        {
+            items.Add(new BreadcrumbItem
+            {
+                Title = area,
+                Url = Url.Action("Index", "Home", new { area })
+            });
+        }
+        
+        // Controller-specific breadcrumbs
+        switch (controller?.ToLower())
+        {
+            case "cars":
+                items.Add(new BreadcrumbItem
+                {
+                    Title = "Cars",
+                    Url = action?.ToLower() == "index" ? null : Url.Action("Index", "Cars"),
+                    Icon = "fas fa-car"
+                });
+                break;
+                
+            case "carparts":
+                items.Add(new BreadcrumbItem
+                {
+                    Title = "Car Parts",
+                    Url = action?.ToLower() == "index" ? null : Url.Action("Index", "CarParts"),
+                    Icon = "fas fa-cogs"
+                });
+                break;
+                
+            case "admin":
+                items.Add(new BreadcrumbItem
+                {
+                    Title = "Admin Panel",
+                    Url = action?.ToLower() == "dashboard" ? null : Url.Action("Dashboard", "Admin"),
+                    Icon = "fas fa-tools"
+                });
+                break;
+                
+            case "customer":
+                items.Add(new BreadcrumbItem
+                {
+                    Title = "My Account",
+                    Url = action?.ToLower() == "dashboard" ? null : Url.Action("Dashboard", "Customer"),
+                    Icon = "fas fa-user"
+                });
+                break;
+                
+            case "order":
+                items.Add(new BreadcrumbItem
+                {
+                    Title = "Orders",
+                    Url = action?.ToLower() == "index" ? null : Url.Action("Index", "Order"),
+                    Icon = "fas fa-shopping-cart"
+                });
+                break;
+        }
+        
+        // Action-specific breadcrumbs
+        if (!string.IsNullOrEmpty(action) && action.ToLower() != "index" && action.ToLower() != "dashboard")
+        {
+            var actionTitle = action switch
+            {
+                "Details" => ViewData["ItemName"]?.ToString() ?? "Details",
+                "Create" or "Add" => "Add New",
+                "Edit" => "Edit",
+                "Delete" => "Delete",
+                "Search" => "Search Results",
+                "Category" => ViewData["CategoryName"]?.ToString() ?? "Category",
+                "Brand" => ViewData["BrandName"]?.ToString() ?? "Brand",
+                "MyOrders" => "My Orders",
+                "Profile" => "Profile",
+                "Settings" => "Settings",
+                "ManageCars" => "Manage Cars",
+                "ManageCarParts" => "Manage Parts",
+                "ManageCustomers" => "Manage Customers",
+                "ManageOrders" => "Manage Orders",
+                _ => action.Replace("Manage", "").Replace("Car", " Car").Trim()
+            };
+            
+            items.Add(new BreadcrumbItem
+            {
+                Title = actionTitle,
+                Url = null // Current page
+            });
+        }
+        
+        return items;
+    }
+}
+
+<style>
+    .breadcrumb-nav {
+        background-color: #f8f9fa;
+        padding: 0.75rem 0;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 0;
+        background-color: transparent;
+        padding: 0;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: #6c757d;
+        font-weight: bold;
+    }
+    
+    .breadcrumb-item a {
+        color: #0d6efd;
+        transition: color 0.2s ease;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: #0a58ca;
+        text-decoration: underline !important;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .breadcrumb-actions {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    
+    .breadcrumb-separator {
+        display: flex;
+        align-items: center;
+        padding: 0 0.5rem;
+        color: #6c757d;
+    }
+    
+    /* Custom separators */
+    .breadcrumb.custom-separator .breadcrumb-item + .breadcrumb-item::before {
+        display: none;
+    }
+    
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .breadcrumb-nav {
+            padding: 0.5rem 0;
+        }
+        
+        .breadcrumb {
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .breadcrumb-item {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .breadcrumb-actions {
+            margin-top: 0.5rem;
+            margin-left: 0;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .breadcrumb-actions .btn {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        /* Hide middle breadcrumb items on mobile */
+        .breadcrumb-item:not(:first-child):not(:last-child):not(:nth-last-child(2)) {
+            display: none;
+        }
+        
+        .breadcrumb-item:nth-last-child(3)::after {
+            content: " ... ";
+            color: #6c757d;
+            padding: 0 0.25rem;
+        }
+    }
+    
+    /* Dark theme support */
+    [data-bs-theme="dark"] .breadcrumb-nav {
+        background-color: #212529;
+        border-bottom-color: #495057;
+    }
+    
+    [data-bs-theme="dark"] .breadcrumb-item a {
+        color: #6ea8fe;
+    }
+    
+    [data-bs-theme="dark"] .breadcrumb-item a:hover {
+        color: #9ec5fe;
+    }
+    
+    [data-bs-theme="dark"] .breadcrumb-item.active,
+    [data-bs-theme="dark"] .breadcrumb-item + .breadcrumb-item::before {
+        color: #adb5bd;
+    }
+    
+    /* Animation */
+    .breadcrumb-nav {
+        animation: breadcrumbSlideIn 0.3s ease-out;
+    }
+    
+    @@keyframes breadcrumbSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Hover effects */
+    .breadcrumb-item a {
+        position: relative;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        margin: -0.25rem -0.5rem;
+    }
+    
+    .breadcrumb-item a:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    /* RTL support */
+    [dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+        content: "‹";
+    }
+    
+    [dir="rtl"] .breadcrumb-actions {
+        margin-left: 0;
+        margin-right: auto;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add structured data for SEO
+        const breadcrumbNav = document.querySelector('.breadcrumb-nav');
+        if (breadcrumbNav) {
+            const breadcrumbItems = Array.from(breadcrumbNav.querySelectorAll('.breadcrumb-item'));
+            
+            if (breadcrumbItems.length > 1) {
+                const structuredData = {
+                    "@@context": "https://schema.org",
+                    "@@type": "BreadcrumbList",
+                    "itemListElement": breadcrumbItems.map((item, index) => {
+                        const link = item.querySelector('a');
+                        const text = item.textContent.trim();
+                        
+                        return {
+                            "@@type": "ListItem",
+                            "position": index + 1,
+                            "name": text,
+                            "item": link ? new URL(link.href, window.location.origin).toString() : undefined
+                        };
+                    }).filter(item => item.name)
+                };
+                
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.textContent = JSON.stringify(structuredData);
+                document.head.appendChild(script);
+            }
+        }
+        
+        // Truncate long breadcrumb items
+        const breadcrumbItems = document.querySelectorAll('.breadcrumb-item');
+        breadcrumbItems.forEach(item => {
+            const maxLength = window.innerWidth < 768 ? 20 : 30;
+            const text = item.textContent.trim();
+            
+            if (text.length > maxLength) {
+                const truncated = text.substring(0, maxLength) + '...';
+                item.title = text; // Full text on hover
+                
+                // Update text while preserving HTML structure
+                const textNode = Array.from(item.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+                if (textNode) {
+                    textNode.textContent = truncated;
+                }
+            }
+        });
+        
+        // Handle breadcrumb actions
+        const actionButtons = document.querySelectorAll('.breadcrumb-actions .btn[data-action]');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const action = this.getAttribute('data-action');
+                const target = this.getAttribute('data-target');
+                
+                switch (action) {
+                    case 'print':
+                        window.print();
+                        break;
+                    case 'share':
+                        if (navigator.share) {
+                            navigator.share({
+                                title: document.title,
+                                url: window.location.href
+                            });
+                        }
+                        break;
+                    case 'bookmark':
+                        // Add to bookmarks functionality
+                        break;
+                }
+            });
+        });
+    });
+    
+    // Utility function to update breadcrumbs dynamically
+    window.updateBreadcrumb = function(title, url = null) {
+        const lastItem = document.querySelector('.breadcrumb-item:last-child');
+        if (lastItem) {
+            if (url) {
+                lastItem.innerHTML = `<a href="${url}" class="text-decoration-none">${title}</a>`;
+                lastItem.classList.remove('active');
+            } else {
+                lastItem.innerHTML = title;
+                lastItem.classList.add('active');
+            }
+        }
+    };
+    
+    // Add breadcrumb item dynamically
+    window.addBreadcrumbItem = function(title, url = null, icon = null) {
+        const breadcrumb = document.querySelector('.breadcrumb');
+        if (breadcrumb) {
+            const li = document.createElement('li');
+            li.className = url ? 'breadcrumb-item' : 'breadcrumb-item active';
+            
+            let content = '';
+            if (icon) content += `<i class="${icon} me-1"></i>`;
+            content += title;
+            
+            if (url) {
+                li.innerHTML = `<a href="${url}" class="text-decoration-none">${content}</a>`;
+            } else {
+                li.innerHTML = content;
+                li.setAttribute('aria-current', 'page');
+            }
+            
+            breadcrumb.appendChild(li);
+        }
+    };
+</script>
+
+@* 
+Usage Examples:
+
+1. Auto-generated breadcrumbs (most common):
+@await Html.PartialAsync("_BreadcrumbNavigation")
+
+2. Custom breadcrumbs:
+@await Html.PartialAsync("_BreadcrumbNavigation", new BreadcrumbViewModel
+{
+    Items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem { Title = "Home", Url = Url.Action("Index", "Home"), Icon = "fas fa-home" },
+        new BreadcrumbItem { Title = "Cars", Url = Url.Action("Index", "Cars"), Icon = "fas fa-car" },
+        new BreadcrumbItem { Title = "Toyota Camry 2020" } // Current page
+    }
+})
+
+3. Breadcrumbs with actions:
+@await Html.PartialAsync("_BreadcrumbNavigation", new BreadcrumbViewModel
+{
+    ShowBackButton = true,
+    Actions = new List<BreadcrumbAction>
+    {
+        new BreadcrumbAction { Title = "Edit", Url = Url.Action("Edit", "Cars", new { id = Model.Id }), Icon = "fas fa-edit", CssClass = "btn-primary btn-sm" },
+        new BreadcrumbAction { Title = "Delete", OnClick = "confirmDelete()", Icon = "fas fa-trash", CssClass = "btn-danger btn-sm" }
+    }
+})
+
+4. Custom separator:
+@await Html.PartialAsync("_BreadcrumbNavigation", new BreadcrumbViewModel
+{
+    CustomSeparator = "<i class='fas fa-chevron-right'></i>",
+    BreadcrumbClass = "custom-separator"
+})
+*@

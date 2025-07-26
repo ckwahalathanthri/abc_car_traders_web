@@ -1,0 +1,608 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarViewModel
+@{
+    ViewData["Title"] = "Add New Car";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Success/Error Messages -->
+<div id="messageContainer" style="display: none;">
+    <div id="alertMessage" class="alert alert-dismissible fade show" role="alert">
+        <i id="alertIcon" class="me-2"></i>
+        <span id="alertText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<div class="add-car-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-plus-circle me-2 text-success"></i>Add New Car
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("Dashboard", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("ManageCars", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-car me-1"></i>Manage Cars
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Add Car</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="@Url.Action("ManageCars", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Cars
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="addCarForm">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Car Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Brand Selection -->
+                            <div class="col-md-6">
+                                <label for="BrandId" class="form-label fw-semibold">
+                                    <i class="fas fa-trademark me-1"></i>Brand *
+                                </label>
+                                <select id="BrandId" name="BrandId" class="form-select" required>
+                                    <option value="">Select Brand</option>
+                                    @if (Model?.Brands != null && Model.Brands.Any())
+                                    {
+                                        @foreach (var brand in Model.Brands)
+                                        {
+                                            <option value="@brand.Value">@brand.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Category Selection -->
+                            <div class="col-md-6">
+                                <label for="CategoryId" class="form-label fw-semibold">
+                                    <i class="fas fa-tags me-1"></i>Category *
+                                </label>
+                                <select id="CategoryId" name="CategoryId" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    @if (Model?.Categories != null && Model.Categories.Any())
+                                    {
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            <option value="@category.Value">@category.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Model -->
+                            <div class="col-md-8">
+                                <label for="Model" class="form-label fw-semibold">
+                                    <i class="fas fa-car me-1"></i>Model *
+                                </label>
+                                <input id="Model" name="Model" type="text" class="form-control" placeholder="e.g., Corolla, Civic, 3 Series" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Year -->
+                            <div class="col-md-4">
+                                <label for="Year" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-1"></i>Year *
+                                </label>
+                                <input id="Year" name="Year" type="number" class="form-control"
+                                       min="1990" max="@DateTime.Now.Year"
+                                       placeholder="@DateTime.Now.Year" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Color -->
+                            <div class="col-md-6">
+                                <label for="Color" class="form-label fw-semibold">
+                                    <i class="fas fa-palette me-1"></i>Color
+                                </label>
+                                <select id="Color" name="Color" class="form-select">
+                                    <option value="">Select Color</option>
+                                    <option value="White">White</option>
+                                    <option value="Black">Black</option>
+                                    <option value="Silver">Silver</option>
+                                    <option value="Gray">Gray</option>
+                                    <option value="Red">Red</option>
+                                    <option value="Blue">Blue</option>
+                                    <option value="Green">Green</option>
+                                    <option value="Yellow">Yellow</option>
+                                    <option value="Brown">Brown</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-6">
+                                <label for="Price" class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-1"></i>Price (USD) *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input id="Price" name="Price" type="number" class="form-control"
+                                           step="0.01" min="0" placeholder="25000.00" required>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Mileage -->
+                            <div class="col-md-4">
+                                <label for="Mileage" class="form-label fw-semibold">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Mileage
+                                </label>
+                                <div class="input-group">
+                                    <input id="Mileage" name="Mileage" type="number" class="form-control"
+                                           min="0" placeholder="50000">
+                                    <span class="input-group-text">miles</span>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Fuel Type -->
+                            <div class="col-md-4">
+                                <label for="FuelType" class="form-label fw-semibold">
+                                    <i class="fas fa-gas-pump me-1"></i>Fuel Type *
+                                </label>
+                                <select id="FuelType" name="FuelType" class="form-select" required>
+                                    <option value="">Select Fuel Type</option>
+                                    <option value="0">Petrol</option>
+                                    <option value="1">Diesel</option>
+                                    <option value="2">Electric</option>
+                                    <option value="3">Hybrid</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Transmission -->
+                            <div class="col-md-4">
+                                <label for="Transmission" class="form-label fw-semibold">
+                                    <i class="fas fa-cogs me-1"></i>Transmission *
+                                </label>
+                                <select id="Transmission" name="Transmission" class="form-select" required>
+                                    <option value="">Select Transmission</option>
+                                    <option value="0">Manual</option>
+                                    <option value="1">Automatic</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Engine Capacity -->
+                            <div class="col-md-6">
+                                <label for="EngineCapacity" class="form-label fw-semibold">
+                                    <i class="fas fa-engine me-1"></i>Engine Capacity
+                                </label>
+                                <div class="input-group">
+                                    <input id="EngineCapacity" name="EngineCapacity" class="form-control"
+                                           placeholder="2.0L, 1800cc">
+                                    <span class="input-group-text">L/cc</span>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Stock Quantity -->
+                            <div class="col-md-6">
+                                <label for="StockQuantity" class="form-label fw-semibold">
+                                    <i class="fas fa-warehouse me-1"></i>Stock Quantity *
+                                </label>
+                                <input id="StockQuantity" name="StockQuantity" type="number" class="form-control"
+                                       min="0" value="1" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="Description" class="form-label fw-semibold">
+                                    <i class="fas fa-align-left me-1"></i>Description
+                                </label>
+                                <textarea id="Description" name="Description" class="form-control" rows="4"
+                                          placeholder="Detailed description of the car, condition, history, etc."></textarea>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="col-12">
+                                <label for="Features" class="form-label fw-semibold">
+                                    <i class="fas fa-star me-1"></i>Features
+                                </label>
+                                <textarea id="Features" name="Features" class="form-control" rows="3"
+                                          placeholder="Air conditioning, GPS, Leather seats, Sunroof, etc. (separate by commas)"></textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Add common features or use the quick add buttons below
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Air Conditioning')">AC</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('GPS Navigation')">GPS</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Leather Seats')">Leather</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Sunroof')">Sunroof</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Bluetooth')">Bluetooth</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Backup Camera')">Backup Camera</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Image URL -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-camera me-2 text-info"></i>Car Image
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="ImageUrl" class="form-label fw-semibold">Image URL</label>
+                            <input id="ImageUrl" name="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://example.com/car-image.jpg">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Enter a valid image URL (JPG, PNG, WebP formats)
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <!-- Image Preview -->
+                        <div id="imagePreview" style="display: none;">
+                            <div class="mb-2">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview()">
+                                <i class="fas fa-times me-1"></i>Clear Preview
+                            </button>
+                        </div>
+                        
+                        <!-- Preview Button -->
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previewImage()">
+                            <i class="fas fa-eye me-1"></i>Preview Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status & Availability -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-toggle-on me-2 text-success"></i>Status & Availability
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input id="IsAvailable" name="IsAvailable" class="form-check-input" type="checkbox"
+                                   value="true" checked>
+                            <label class="form-check-label fw-semibold" for="IsAvailable">
+                                Available for Sale
+                            </label>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Car will be visible to customers only when marked as available and stock quantity is greater than 0.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="@Url.Action("ManageCars", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-plus me-1"></i>Add Car
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .card {
+        border-radius: 12px;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    .form-label.fw-semibold {
+        color: #495057;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .is-valid {
+        border-color: #198754;
+    }
+
+    @@media (max-width: 768px) {
+        .add-car-container {
+            padding: 0 10px;
+        }
+    }
+</style>
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+
+    <script>
+        $(document).ready(function() {
+            // Form submission
+            $('#addCarForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Clear previous validation errors
+                clearValidationErrors();
+                
+                // Collect form data
+                var formData = collectFormData();
+                
+                // Validate form data
+                if (!validateFormData(formData)) {
+                    return;
+                }
+                
+                // Show loading state
+                showLoadingState();
+                
+                // Get anti-forgery token
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                
+                // Submit via AJAX
+                $.ajax({
+                    url: '@Url.Action("AddCar", "Admin")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    success: function(response) {
+                        hideLoadingState();
+                        
+                        if (response.success) {
+                            showMessage('success', 'Car added successfully!');
+                            setTimeout(function() {
+                                window.location.href = '@Url.Action("ManageCars", "Admin")';
+                            }, 1500);
+                        } else {
+                            showMessage('error', response.message || 'Failed to add car.');
+                            if (response.errors) {
+                                displayValidationErrors(response.errors);
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        hideLoadingState();
+                        console.error('Error:', error);
+                        showMessage('error', 'An error occurred while adding the car.');
+                    }
+                });
+            });
+            
+            // Image URL preview
+            $('#ImageUrl').on('blur', function() {
+                if ($(this).val()) {
+                    previewImage();
+                }
+            });
+        });
+        
+        function collectFormData() {
+            return {
+                BrandId: parseInt($('#BrandId').val()) || 0,
+                CategoryId: parseInt($('#CategoryId').val()) || 0,
+                Model: $('#Model').val().trim(),
+                Year: parseInt($('#Year').val()) || 0,
+                Color: $('#Color').val(),
+                Price: parseFloat($('#Price').val()) || 0,
+                Mileage: $('#Mileage').val() ? parseInt($('#Mileage').val()) : null,
+                FuelType: parseInt($('#FuelType').val()),
+                Transmission: parseInt($('#Transmission').val()),
+                EngineCapacity: $('#EngineCapacity').val().trim(),
+                Description: $('#Description').val().trim(),
+                Features: $('#Features').val().trim(),
+                ImageUrl: $('#ImageUrl').val().trim(),
+                StockQuantity: parseInt($('#StockQuantity').val()) || 1,
+                IsAvailable: $('#IsAvailable').is(':checked')
+            };
+        }
+        
+        function validateFormData(data) {
+            var isValid = true;
+            
+            // Required field validations
+            if (!data.BrandId) {
+                showFieldError('BrandId', 'Please select a brand');
+                isValid = false;
+            }
+            
+            if (!data.CategoryId) {
+                showFieldError('CategoryId', 'Please select a category');
+                isValid = false;
+            }
+            
+            if (!data.Model) {
+                showFieldError('Model', 'Model is required');
+                isValid = false;
+            }
+            
+            if (!data.Year || data.Year < 1990 || data.Year > new Date().getFullYear()) {
+                showFieldError('Year', 'Please enter a valid year');
+                isValid = false;
+            }
+            
+            if (!data.Price || data.Price <= 0) {
+                showFieldError('Price', 'Please enter a valid price');
+                isValid = false;
+            }
+            
+            if (data.FuelType === undefined || data.FuelType === null || data.FuelType === '') {
+                showFieldError('FuelType', 'Please select a fuel type');
+                isValid = false;
+            }
+            
+            if (data.Transmission === undefined || data.Transmission === null || data.Transmission === '') {
+                showFieldError('Transmission', 'Please select a transmission type');
+                isValid = false;
+            }
+            
+            if (!data.StockQuantity || data.StockQuantity < 0) {
+                showFieldError('StockQuantity', 'Please enter a valid stock quantity');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        function showFieldError(fieldId, message) {
+            var field = $('#' + fieldId);
+            field.addClass('is-invalid');
+            field.siblings('.invalid-feedback').text(message);
+        }
+        
+        function clearValidationErrors() {
+            $('.form-control, .form-select').removeClass('is-invalid is-valid');
+            $('.invalid-feedback').text('');
+        }
+        
+        function displayValidationErrors(errors) {
+            errors.forEach(function(error) {
+                showMessage('warning', error);
+            });
+        }
+        
+        function showLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Adding...');
+        }
+        
+        function hideLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-plus me-1"></i>Add Car');
+        }
+        
+        function showMessage(type, message) {
+            var alertClass = 'alert-success';
+            var iconClass = 'fas fa-check-circle';
+            
+            if (type === 'error') {
+                alertClass = 'alert-danger';
+                iconClass = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                alertClass = 'alert-warning';
+                iconClass = 'fas fa-exclamation-triangle';
+            }
+            
+            $('#alertMessage').removeClass('alert-success alert-danger alert-warning')
+                              .addClass(alertClass);
+            $('#alertIcon').removeClass().addClass(iconClass);
+            $('#alertText').text(message);
+            $('#messageContainer').show();
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(function() {
+                    $('#messageContainer').fadeOut();
+                }, 3000);
+            }
+        }
+        
+        function addFeature(feature) {
+            var featuresTextarea = $('#Features');
+            var currentFeatures = featuresTextarea.val();
+            
+            if (currentFeatures.includes(feature)) {
+                return; // Feature already exists
+            }
+            
+            if (currentFeatures.trim() === '') {
+                featuresTextarea.val(feature);
+            } else {
+                featuresTextarea.val(currentFeatures + ', ' + feature);
+            }
+        }
+        
+        function previewImage() {
+            var imageUrl = $('#ImageUrl').val().trim();
+            
+            if (!imageUrl) {
+                clearImagePreview();
+                return;
+            }
+            
+            // Simple URL validation
+            if (!isValidImageUrl(imageUrl)) {
+                showFieldError('ImageUrl', 'Please enter a valid image URL');
+                return;
+            }
+            
+            $('#previewImg').attr('src', imageUrl);
+            $('#imagePreview').show();
+            
+            // Handle image load error
+            $('#previewImg').on('error', function() {
+                showFieldError('ImageUrl', 'Unable to load image from this URL');
+                clearImagePreview();
+            });
+        }
+        
+        function clearImagePreview() {
+            $('#imagePreview').hide();
+            $('#previewImg').attr('src', '');
+            $('#ImageUrl').removeClass('is-invalid');
+        }
+        
+        function isValidImageUrl(url) {
+            try {
+                new URL(url);
+                return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
+            } catch {
+                return false;
+            }
+        }
+    </script>
+}

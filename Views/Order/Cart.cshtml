@@ -1,0 +1,412 @@
+﻿@model ABCCarTraders.Models.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Shopping Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-primary text-white py-4 mb-4 rounded">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-shopping-cart me-3"></i>Shopping Cart
+                </h1>
+                <p class="lead mb-0">Review your items before checkout</p>
+            </div>
+            <div class="col-md-4 text-end">
+                @if (Model.HasItems)
+                {
+                    <a href="@Url.Action("Checkout", "Order")" class="btn btn-light btn-lg">
+                        <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.HasItems)
+{
+    <!-- Empty Cart -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                        <h3 class="fw-bold mb-3">Your cart is empty</h3>
+                        <p class="text-muted mb-4">Looks like you haven't added anything to your cart yet.</p>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="@Url.Action("Index", "Cars")" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-car me-2"></i>Shop Cars
+                            </a>
+                            <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-cogs me-2"></i>Shop Parts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Cart Content -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="fw-bold mb-0">
+                            Cart Items (@Model.TotalItems @(Model.TotalItems == 1 ? "item" : "items"))
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.HasInvalidItems)
+                        {
+                            <div class="alert alert-warning m-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Some items in your cart are no longer available or have insufficient stock. Please review and update your cart.
+                            </div>
+                        }
+                        
+                        @if (Model.ValidationMessages.Any())
+                        {
+                            <div class="alert alert-info m-3">
+                                <ul class="mb-0">
+                                    @foreach (var message in Model.ValidationMessages)
+                                    {
+                                        <li>@message</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                        
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <div class="cart-item border-bottom p-4" data-cart-id="@item.CartItemId">
+                                <div class="row align-items-center">
+                                    <!-- Product Image -->
+                                    <div class="col-md-2">
+                                        <img src="@(string.IsNullOrEmpty(item.ProductImage) ? "/images/placeholder.jpg" : item.ProductImage)" 
+                                             alt="@item.ProductName" 
+                                             class="img-fluid rounded cart-item-image">
+                                    </div>
+                                    
+                                    <!-- Product Details -->
+                                    <div class="col-md-4">
+                                        <h6 class="fw-bold mb-1">@item.ProductName</h6>
+                                        <small class="text-muted d-block">@item.ProductType</small>
+                                        @if (!string.IsNullOrEmpty(item.BrandName))
+                                        {
+                                            <small class="text-muted d-block">Brand: @item.BrandName</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.PartNumber))
+                                        {
+                                            <small class="text-muted d-block">Part #: @item.PartNumber</small>
+                                        }
+                                        
+                                        <!-- Availability Status -->
+                                        @if (!item.IsAvailable)
+                                        {
+                                            <span class="badge bg-danger mt-1">Unavailable</span>
+                                        }
+                                        else if (!item.HasSufficientStock)
+                                        {
+                                            <span class="badge bg-warning text-dark mt-1">Insufficient Stock</span>
+                                        }
+                                        else if (item.IsLowStock)
+                                        {
+                                            <span class="badge bg-warning text-dark mt-1">Low Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success mt-1">In Stock</span>
+                                        }
+                                    </div>
+                                    
+                                    <!-- Quantity Controls -->
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Quantity</label>
+                                        <div class="input-group input-group-sm">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(@item.CartItemId, @(item.Quantity - 1))">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="form-control text-center quantity-input" 
+                                                   value="@item.Quantity" min="1" max="@item.StockQuantity"
+                                                   onchange="updateQuantity(@item.CartItemId, this.value)">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(@item.CartItemId, @(item.Quantity + 1))">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">@item.StockQuantity available</small>
+                                    </div>
+                                    
+                                    <!-- Price -->
+                                    <div class="col-md-2 text-center">
+                                        <div class="fw-bold">@item.FormattedUnitPrice</div>
+                                        <small class="text-muted">each</small>
+                                    </div>
+                                    
+                                    <!-- Total & Actions -->
+                                    <div class="col-md-2 text-end">
+                                        <div class="fw-bold fs-5 text-success mb-2">@item.FormattedTotalPrice</div>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="removeFromCart(@item.CartItemId)">
+                                            <i class="fas fa-trash me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="@Url.Action("Index", "Cars")" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                            <button class="btn btn-outline-danger" onclick="clearCart()">
+                                <i class="fas fa-trash me-2"></i>Clear Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm sticky-top">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="fw-bold mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Subtotal -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal (@Model.TotalItems items)</span>
+                            <span class="fw-bold">@Model.FormattedSubTotal</span>
+                        </div>
+                        
+                        <!-- Shipping -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping</span>
+                            <span class="fw-bold @(Model.ShippingCost == 0 ? "text-success" : "")">
+                                @(Model.ShippingCost == 0 ? "FREE" : Model.FormattedShippingCost)
+                            </span>
+                        </div>
+                        
+                        @if (!Model.QualifiesForFreeShipping && Model.ShippingCost > 0)
+                        {
+                            <div class="alert alert-info py-2 px-3 small">
+                                <i class="fas fa-truck me-1"></i>
+                                Spend @Model.FormattedAmountForFreeShipping more for FREE shipping!
+                            </div>
+                        }
+                        
+                        <!-- Tax -->
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Tax (10%)</span>
+                            <span class="fw-bold">@Model.FormattedTaxAmount</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fw-bold fs-5">Total</span>
+                            <span class="fw-bold fs-4 text-success">@Model.FormattedTotal</span>
+                        </div>
+                        
+                        <!-- Checkout Button -->
+                        @if (Model.IsValid)
+                        {
+                            <div class="d-grid">
+                                <a href="@Url.Action("Checkout", "Order")" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-grid">
+                                <button class="btn btn-secondary btn-lg" disabled>
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Fix Cart Issues First
+                                </button>
+                            </div>
+                        }
+                        
+                        <!-- Security Info -->
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lock me-1"></i>
+                                Secure checkout powered by SSL encryption
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Support -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body text-center">
+                        <h6 class="fw-bold mb-2">Need Help?</h6>
+                        <p class="small text-muted mb-3">Our customer service team is here to help</p>
+                        <div class="d-grid gap-2">
+                            <a href="tel:+94112345678" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-phone me-2"></i>+94 11 234 5678
+                            </a>
+                            <a href="mailto:support@abccartraders.com" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-envelope me-2"></i>Email Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cart-item-image {
+        height: 80px;
+        width: 80px;
+        object-fit: cover;
+    }
+    
+    .cart-item {
+        transition: background-color 0.3s ease;
+    }
+    
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .quantity-input {
+        max-width: 60px;
+    }
+    
+    .sticky-top {
+        top: 100px;
+    }
+    
+    .input-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #1e4a8c 100%);
+    }
+    
+    @@media (max-width: 768px) {
+        .cart-item .row {
+            text-align: center;
+        }
+        
+        .cart-item .col-md-2,
+        .cart-item .col-md-4 {
+            margin-bottom: 1rem;
+        }
+        
+        .sticky-top {
+            position: static !important;
+        }
+    }
+</style>
+
+<script>
+    function updateQuantity(cartId, newQuantity) {
+        if (newQuantity < 1) return;
+        
+        fetch('@Url.Action("UpdateCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: `cartId=${cartId}&quantity=${newQuantity}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh to update totals
+            } else {
+                alert('Error updating cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the cart.');
+        });
+    }
+    
+    function removeFromCart(cartId) {
+        if (!confirm('Are you sure you want to remove this item from your cart?')) {
+            return;
+        }
+        
+        fetch('@Url.Action("RemoveFromCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: `cartId=${cartId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh to update cart
+            } else {
+                alert('Error removing item: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while removing the item.');
+        });
+    }
+    
+    function clearCart() {
+        if (!confirm('Are you sure you want to clear your entire cart? This action cannot be undone.')) {
+            return;
+        }
+        
+        fetch('@Url.Action("ClearCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh to show empty cart
+            } else {
+                alert('Error clearing cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while clearing the cart.');
+        });
+    }
+    
+    // Add CSRF token to forms
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create hidden CSRF token input if it doesn't exist
+        if (!document.querySelector('input[name="__RequestVerificationToken"]')) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = '@Html.AntiForgeryToken()'.replace(/&lt;[^&]*&gt;/g, '');
+            document.body.appendChild(tokenInput);
+        }
+    });
+</script>
+
+@Html.AntiForgeryToken()

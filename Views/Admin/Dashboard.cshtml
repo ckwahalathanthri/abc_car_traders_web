@@ -1,0 +1,360 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Welcome back, @Model.UserName</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus me-1"></i>Quick Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="@Url.Action("AddCar", "Admin")">
+                                    <i class="fas fa-car me-2"></i>Add New Car
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="@Url.Action("AddCarPart", "Admin")">
+                                    <i class="fas fa-cogs me-2"></i>Add New Part
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary">
+                            <i class="fas fa-car text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-title text-muted mb-1">Total Cars</h6>
+                            <h4 class="fw-bold mb-0 text-dark">@Model.AdminData?.TotalCars</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success">
+                            <i class="fas fa-cogs text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-title text-muted mb-1">Car Parts</h6>
+                            <h4 class="fw-bold mb-0 text-dark">@Model.AdminData?.TotalCarParts</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-title text-muted mb-1">Customers</h6>
+                            <h4 class="fw-bold mb-0 text-dark">@Model.AdminData?.TotalCustomers</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning">
+                            <i class="fas fa-shopping-cart text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-title text-muted mb-1">Total Orders</h6>
+                            <h4 class="fw-bold mb-0 text-dark">@Model.AdminData?.TotalOrders</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Revenue and Order Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="card-title fw-bold mb-0">Revenue Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h5 class="fw-bold text-success mb-1">$@Model.AdminData?.TotalRevenue.ToString("N0")</h5>
+                            <small class="text-muted">Total Revenue</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="fw-bold text-primary mb-1">$@Model.AdminData?.MonthlyRevenue.ToString("N0")</h5>
+                            <small class="text-muted">This Month</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="card-title fw-bold mb-0">Order Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h5 class="fw-bold text-warning mb-1">@Model.AdminData?.PendingOrders</h5>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="fw-bold text-success mb-1">@Model.AdminData?.CompletedOrders</h5>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="card-title fw-bold mb-0">New This Month</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-info mb-1">@Model.AdminData?.NewCustomersThisMonth</h5>
+                            <small class="text-muted">New Customers</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <!-- Recent Activity -->
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="card-title fw-bold mb-0">Recent Orders</h6>
+                    <a href="@Url.Action("ManageOrders", "Admin")" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                 <div class="card-body p-0">
+                    @if (Model?.AdminData?.RecentOrders != null && Model.AdminData.RecentOrders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.AdminData.RecentOrders)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="fw-bold text-primary">#@order.OrderNumber</span>
+                                            </td>
+                                            <td>@(order.User?.FirstName ?? "Unknown")</td>
+                                            <td>
+                                                <span class="fw-bold">$@order.TotalAmount.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@(order.OrderStatus.ToString() == "Pending" ? "warning" :
+                                                                                                                             order.OrderStatus.ToString() == "Completed" ? "success" :
+                                                                                                                             order.OrderStatus.ToString() == "Processing" ? "info" : "secondary")">
+                                            @order.OrderStatus
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@order.OrderDate.ToString("MMM dd, yyyy")</small>
+                                    </td>
+                                </tr>
+                                                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent orders found</p>
+                        </div>
+                    }
+                </div> 
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="card-title fw-bold mb-0">Low Stock Alert</h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var hasLowStockCars = Model?.AdminData?.LowStockCars != null && Model.AdminData.LowStockCars.Any();
+                        var hasLowStockParts = Model?.AdminData?.LowStockCarParts != null && Model.AdminData.LowStockCarParts.Any();
+                    }
+
+                    @if (hasLowStockCars || hasLowStockParts)
+                    {
+                        @if (hasLowStockCars)
+                        {
+                            <h6 class="text-danger mb-2">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Low Stock Cars
+                            </h6>
+                            @foreach (var car in Model.AdminData.LowStockCars.Take(3))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small>@(car?.Brand?.BrandName ?? "Unknown") @(car?.Model ?? "Unknown")</small>
+                                    <span class="badge bg-danger">@(car?.StockQuantity ?? 0) left</span>
+                                </div>
+                            }
+                        }
+
+                        @if (hasLowStockParts)
+                        {
+                            <h6 class="text-warning mb-2 mt-3">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Low Stock Parts
+                            </h6>
+                            @foreach (var part in Model.AdminData.LowStockCarParts.Take(3))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small>@(part?.PartName ?? "Unknown")</small>
+                                    <span class="badge bg-warning">@(part?.StockQuantity ?? 0) left</span>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <p class="text-muted mb-0">All items in stock</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-container {
+        padding: 1.5rem 0;
+    }
+
+    .stat-card {
+        transition: transform 0.2s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .table th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 0.875rem;
+    }
+
+    .table td {
+        padding: 0.875rem;
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.8em;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem 0;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+    }
+</style>
+
+<script>
+    function refreshDashboard() {
+        window.location.reload();
+    }
+
+    // Auto-refresh dashboard every 5 minutes
+    setInterval(function() {
+        window.location.reload();
+    }, 300000);
+</script>

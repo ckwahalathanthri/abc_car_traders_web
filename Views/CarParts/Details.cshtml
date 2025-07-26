@@ -1,0 +1,725 @@
+﻿@using ABCCarTraders.Controllers
+@model CarPartDetailsViewModel
+@{
+    ViewData["Title"] = $"{Model.CarPart.BrandName} {Model.CarPart.PartName} - {Model.CarPart.PartNumber}";
+    ViewData["ItemName"] = $"{Model.CarPart.BrandName} {Model.CarPart.PartName}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Breadcrumb -->
+@* @await Html.PartialAsync("_BreadcrumbNavigation") *@
+
+<!-- Part Details -->
+<div class="container-fluid">
+    <div class="row g-4">
+        <!-- Part Images -->
+        <div class="col-lg-6">
+            <div class="part-images sticky-top" style="top: 20px;">
+                <!-- Main Image -->
+                <div class="main-image-container mb-3">
+                    <div class="position-relative">
+                        <img src="@(Model.CarPart.ImageUrl ?? "/images/placeholder-part.jpg")"
+                             class="img-fluid rounded shadow" alt="@Model.CarPart.BrandName @Model.CarPart.PartName"
+                             id="mainPartImage" style="width: 100%; height: 400px; object-fit: cover;">
+
+                        <!-- Part Number Badge -->
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-3 fs-6">
+                            #@Model.CarPart.PartNumber
+                        </span>
+
+                        <!-- Stock Status -->
+                        <span class="badge bg-@Model.StockStatusColor position-absolute top-0 end-0 m-3 fs-6">
+                            @Model.StockMessage
+                        </span>
+
+                        <!-- Genuine Parts Badge -->
+                        <div class="genuine-badge position-absolute bottom-0 start-0 m-3">
+                            <span class="badge bg-warning text-dark fs-6">
+                                <i class="fas fa-certificate me-1"></i>Genuine Part
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Part Info Card -->
+                <div class="part-info-card card bg-light">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Part Information
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="info-item">
+                                    <small class="text-muted">Part Number</small>
+                                    <div class="fw-bold">#@Model.CarPart.PartNumber</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-item">
+                                    <small class="text-muted">Brand</small>
+                                    <div class="fw-bold">@Model.CarPart.BrandName</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-item">
+                                    <small class="text-muted">Category</small>
+                                    <div class="fw-bold">@Model.CarPart.CategoryName</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-item">
+                                    <small class="text-muted">Stock Level</small>
+                                    <div class="fw-bold">@Model.CarPart.StockQuantity units</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part Information -->
+        <div class="col-lg-6">
+            <div class="part-info">
+                <!-- Part Header -->
+                <div class="part-header mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h1 class="display-6 fw-bold mb-2">@Model.CarPart.PartName</h1>
+                            <div class="part-categories">
+                                <span class="badge bg-success me-2">@Model.CarPart.BrandName</span>
+                                <span class="badge bg-secondary">@Model.CarPart.CategoryName</span>
+                            </div>
+                        </div>
+                        <div class="part-actions">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-danger" onclick="addToWishlist(@Model.CarPart.CarPartId)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="addToCompare(@Model.CarPart.CarPartId)">
+                                    <i class="fas fa-balance-scale"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="sharePart()">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="part-price mb-4">
+                        <h2 class="text-success fw-bold mb-0">LKR @Model.CarPart.Price.ToString("N2")</h2>
+                        <small class="text-muted">Price includes applicable taxes</small>
+                    </div>
+                </div>
+
+                <!-- Key Information -->
+                <div class="key-info mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-cog me-2 text-success"></i>Part Specifications
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-barcode text-primary me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Part Number</div>
+                                        <div class="text-muted">#@Model.CarPart.PartNumber</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Brand</div>
+                                        <div class="text-muted">@Model.CarPart.BrandName</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-tags text-info me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Category</div>
+                                        <div class="text-muted">@Model.CarPart.CategoryName</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="spec-item p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-boxes text-secondary me-2"></i>
+                                    <div>
+                                        <div class="fw-semibold">Stock Status</div>
+                                        <div class="text-muted">@Model.StockMessage</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compatibility Information -->
+                @if (Model.CompatibilityList?.Any() == true)
+                {
+                    <div class="compatibility-info mb-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-car me-2 text-primary"></i>Vehicle Compatibility
+                        </h5>
+                        <div class="compatibility-list">
+                            <div class="row g-2">
+                                @foreach (var vehicle in Model.CompatibilityList.Take(6))
+                                {
+                                    <div class="col-md-6">
+                                        <div class="compatibility-item p-2 bg-light rounded small">
+                                            <i class="fas fa-check text-success me-2"></i>@vehicle
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.CompatibilityList.Count > 6)
+                            {
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-link btn-sm p-0" onclick="showAllCompatibility()">
+                                        <i class="fas fa-plus me-1"></i>Show @(Model.CompatibilityList.Count - 6) more
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Add to Cart Section -->
+                <div class="add-to-cart-section mb-4">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">
+                                <i class="fas fa-shopping-cart me-2"></i>Purchase This Part
+                            </h6>
+
+                            @if (Model.CanAddToCart && Model.CarPart.IsAvailable && Model.CarPart.StockQuantity > 0)
+                            {
+                                <form id="addToCartForm">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Quantity</label>
+                                            <select class="form-select" id="quantity" name="quantity">
+                                                @for (int i = 1; i <= Math.Min(Model.CarPart.StockQuantity, 10); i++)
+                                                {
+                                                    <option value="@i" selected="@(i == Model.Quantity)">@i</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <button type="button" class="btn btn-success btn-lg w-100" onclick="addToCart()">
+                                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bulk Order -->
+                                    @if (Model.CarPart.StockQuantity > 10)
+                                    {
+                                        <div class="mt-3">
+                                            <small class="text-muted">
+                                                Need more than 10 units?
+                                                <a href="@Url.Action("Contact", "Home")" class="text-decoration-none">Contact us for bulk pricing</a>
+                                            </small>
+                                        </div>
+                                    }
+                                </form>
+                            }
+                            else if (!User.Identity.IsAuthenticated)
+                            {
+                                <p class="text-muted mb-3">Please login to purchase this part.</p>
+                                <a href="@Url.Action("Login", "Account")" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login to Purchase
+                                </a>
+                            }
+                            else if (!Model.CarPart.IsAvailable || Model.CarPart.StockQuantity == 0)
+                            {
+                                <p class="text-muted mb-3">This part is currently out of stock.</p>
+                                <button type="button" class="btn btn-outline-secondary btn-lg w-100" onclick="notifyWhenAvailable()">
+                                    <i class="fas fa-bell me-2"></i>Notify When Available
+                                </button>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-3">Contact us for purchasing information.</p>
+                                <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-success btn-lg w-100">
+                                    <i class="fas fa-phone me-2"></i>Contact Us
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Installation & Support -->
+                <div class="installation-support">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">
+                                <i class="fas fa-tools me-2"></i>Installation & Support
+                            </h6>
+                            <p class="card-text mb-3">Need help with installation or have questions?</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="showInstallationGuide()">
+                                    <i class="fas fa-book me-1"></i>Installation Guide
+                                </button>
+                                <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-headset me-1"></i>Get Support
+                                </a>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="findInstaller()">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Find Installer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description and Specifications -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="part-details-tabs">
+                <ul class="nav nav-tabs" id="partDetailsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab"
+                                data-bs-target="#description" type="button" role="tab">
+                            <i class="fas fa-info-circle me-2"></i>Description
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="compatibility-tab" data-bs-toggle="tab"
+                                data-bs-target="#compatibility" type="button" role="tab">
+                            <i class="fas fa-car me-2"></i>Compatibility
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specifications-tab" data-bs-toggle="tab"
+                                data-bs-target="#specifications" type="button" role="tab">
+                            <i class="fas fa-cog me-2"></i>Specifications
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="installation-tab" data-bs-toggle="tab"
+                                data-bs-target="#installation" type="button" role="tab">
+                            <i class="fas fa-tools me-2"></i>Installation
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="partDetailsTabContent">
+                    <!-- Description Tab -->
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Model.CarPart.Description))
+                                {
+                                    <p class="lead">@Model.CarPart.Description</p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No detailed description available for this part.</p>
+                                }
+
+                                <!-- Quality Features -->
+                                <div class="quality-features mt-4">
+                                    <h6 class="fw-bold mb-3">Quality Features</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="feature-item d-flex align-items-center">
+                                                <i class="fas fa-certificate text-warning me-3"></i>
+                                                <span>Genuine OEM Quality</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="feature-item d-flex align-items-center">
+                                                <i class="fas fa-shield-alt text-success me-3"></i>
+                                                <span>Quality Warranty</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="feature-item d-flex align-items-center">
+                                                <i class="fas fa-truck text-primary me-3"></i>
+                                                <span>Fast Shipping</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="feature-item d-flex align-items-center">
+                                                <i class="fas fa-tools text-info me-3"></i>
+                                                <span>Expert Support</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compatibility Tab -->
+                    <div class="tab-pane fade" id="compatibility" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                @if (Model.CompatibilityList?.Any() == true)
+                                {
+                                    <h6 class="fw-bold mb-3">Compatible Vehicles</h6>
+                                    <div class="compatibility-grid">
+                                        <div class="row g-3">
+                                            @foreach (var vehicle in Model.CompatibilityList)
+                                            {
+                                                <div class="col-md-6 col-lg-4">
+                                                    <div class="compatibility-card p-3 border rounded">
+                                                        <i class="fas fa-car text-primary me-2"></i>
+                                                        <span>@vehicle</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Compatibility information not available. Please contact us for specific vehicle compatibility.</p>
+                                }
+
+                                <div class="mt-4">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Note:</strong> Compatibility information is for reference only.
+                                        Please verify part compatibility with your vehicle before ordering.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specifications Tab -->
+                    <div class="tab-pane fade" id="specifications" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-semibold">Part Name</td>
+                                                <td>@Model.CarPart.PartName</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Part Number</td>
+                                                <td>@Model.CarPart.PartNumber</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Brand</td>
+                                                <td>@Model.CarPart.BrandName</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Category</td>
+                                                <td>@Model.CarPart.CategoryName</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Price</td>
+                                                <td class="text-success fw-bold">LKR @Model.CarPart.Price.ToString("N2")</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Stock Quantity</td>
+                                                <td>@Model.CarPart.StockQuantity units</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Availability</td>
+                                                <td>
+                                                    <span class="badge bg-@Model.StockStatusColor">@Model.StockMessage</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Installation Tab -->
+                    <div class="tab-pane fade" id="installation" role="tabpanel">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">Installation Information</h6>
+                                <div class="installation-steps">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Professional Installation Recommended:</strong>
+                                        We recommend having this part installed by a qualified mechanic.
+                                    </div>
+
+                                    <div class="row g-4 mt-3">
+                                        <div class="col-md-6">
+                                            <div class="installation-option text-center p-4 border rounded">
+                                                <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                                                <h6 class="fw-bold">Professional Installation</h6>
+                                                <p class="text-muted mb-3">Find certified mechanics near you</p>
+                                                <button type="button" class="btn btn-primary" onclick="findInstaller()">
+                                                    Find Installer
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="installation-option text-center p-4 border rounded">
+                                                <i class="fas fa-wrench fa-3x text-success mb-3"></i>
+                                                <h6 class="fw-bold">DIY Installation</h6>
+                                                <p class="text-muted mb-3">Download installation guide</p>
+                                                <button type="button" class="btn btn-success" onclick="downloadGuide()">
+                                                    Download Guide
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Parts -->
+    @if (Model.SimilarCarParts?.Any() == true)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="fw-bold mb-4">
+                    <i class="fas fa-cogs me-2 text-success"></i>Related Parts You Might Need
+                </h3>
+                <div class="row g-4">
+                    @foreach (var relatedPart in Model.SimilarCarParts.Take(4))
+                    {
+                        <div class="col-xl-3 col-lg-4 col-md-6">
+                            <div class="card h-100 border-0 shadow-sm related-part-card">
+                                <div class="position-relative">
+                                    <img src="@(relatedPart.ImageUrl ?? "/images/placeholder-part.jpg")"
+                                         class="card-img-top" alt="@relatedPart.PartName"
+                                         style="height: 160px; object-fit: cover;">
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                        #@relatedPart.PartNumber
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">@relatedPart.PartName</h6>
+                                    <p class="text-muted small mb-2">@relatedPart.BrandName</p>
+                                    <p class="text-success fw-bold mb-2">LKR @relatedPart.Price.ToString("N2")</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("Details", "CarParts", new { id = relatedPart.CarPartId })"
+                                           class="btn btn-success btn-sm flex-fill">
+                                            View Details
+                                        </a>
+                                        @if (relatedPart.IsAvailable && relatedPart.StockQuantity > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                                    onclick="addToCart(@relatedPart.CarPartId)">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .spec-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .spec-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+
+    .compatibility-item {
+        transition: background-color 0.3s ease;
+    }
+
+        .compatibility-item:hover {
+            background-color: #e9ecef !important;
+        }
+
+    .feature-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+    .related-part-card {
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .related-part-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+    .nav-tabs .nav-link {
+        border-radius: 10px 10px 0 0;
+        border: none;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        margin-right: 5px;
+    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #198754;
+            color: white;
+        }
+
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-radius: 0 10px 10px 10px;
+    }
+
+    .installation-option {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .installation-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    @@media (max-width: 768px) {
+        .part-actions .btn-group {
+            flex-direction: column;
+        }
+
+        .add-to-cart-section .row {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function addToCart(partId = @Model.CarPart.CarPartId) {
+        const quantity = document.getElementById('quantity')?.value || 1;
+
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({
+                itemId: partId,
+                itemType: 'CarPart',
+                quantity: parseInt(quantity)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Part added to cart successfully!');
+                updateCartCount();
+            } else {
+                alert('Error adding part to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the part to cart.');
+        });
+    }
+
+    function addToWishlist(partId) {
+        alert('Wishlist functionality coming soon!');
+    }
+
+    function addToCompare(partId) {
+        let compareList = JSON.parse(localStorage.getItem('partCompare') || '[]');
+        if (compareList.length >= 4) {
+            alert('You can compare maximum 4 parts at a time.');
+            return;
+        }
+
+        if (compareList.includes(partId)) {
+            alert('This part is already in your comparison list.');
+            return;
+        }
+
+        compareList.push(partId);
+        localStorage.setItem('partCompare', JSON.stringify(compareList));
+        alert('Part added to comparison list!');
+    }
+
+    function sharePart() {
+        if (navigator.share) {
+            navigator.share({
+                title: '@Model.CarPart.BrandName @Model.CarPart.PartName',
+                text: 'Check out this @Model.CarPart.PartName for LKR @Model.CarPart.Price.ToString("N2")',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Part link copied to clipboard!');
+            });
+        }
+    }
+
+    function notifyWhenAvailable() {
+        const email = prompt('Enter your email to be notified when this part is back in stock:');
+        if (email) {
+            alert('Thank you! We will notify you when this part is available.');
+        }
+    }
+
+    function showAllCompatibility() {
+        alert('All compatibility information displayed in the Compatibility tab.');
+        document.getElementById('compatibility-tab').click();
+    }
+
+    function showInstallationGuide() {
+        document.getElementById('installation-tab').click();
+    }
+
+    function findInstaller() {
+        alert('Installer finder feature coming soon! Please contact us for recommended installers in your area.');
+    }
+
+    function downloadGuide() {
+        alert('Installation guide download coming soon!');
+    }
+
+    function updateCartCount() {
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+</script>

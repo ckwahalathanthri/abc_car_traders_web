@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel | ABC Car Traders</title>
+    <link rel="icon" type="image/x-icon" href="~/images/favicon.ico">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin Custom CSS -->
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container-fluid">
+                <!-- Brand -->
+                <a class="navbar-brand fw-bold" href="@Url.Action("Dashboard", "Admin")">
+                    <i class="fas fa-tools me-2 text-warning"></i>ABC Admin Panel
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="adminNavbar">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                               href="@Url.Action("Dashboard", "Admin")">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Car") == true ? "active" : "")" 
+                               href="#" id="carsAdminDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-car me-1"></i>Cars Management
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("ManageCars", "Admin")">
+                                    <i class="fas fa-list me-2"></i>All Cars
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("AddCar", "Admin")">
+                                    <i class="fas fa-plus me-2"></i>Add New Car
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("ManageCategories", "Admin")">
+                                    <i class="fas fa-tags me-2"></i>Car Categories
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("ManageBrands", "Admin")">
+                                    <i class="fas fa-trademark me-2"></i>Car Brands
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Part") == true ? "active" : "")" 
+                               href="#" id="partsAdminDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cogs me-1"></i>Parts Management
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("ManageCarParts", "Admin")">
+                                    <i class="fas fa-list me-2"></i>All Parts
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("AddCarPart", "Admin")">
+                                    <i class="fas fa-plus me-2"></i>Add New Part
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("ManagePartCategories", "Admin")">
+                                    <i class="fas fa-tags me-2"></i>Part Categories
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageCustomers" ? "active" : "")" 
+                               href="@Url.Action("ManageCustomers", "Admin")">
+                                <i class="fas fa-users me-1"></i>Customers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageOrders" ? "active" : "")" 
+                               href="@Url.Action("ManageOrders", "Admin")">
+                                <i class="fas fa-shopping-cart me-1"></i>Orders
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-chart-bar me-1"></i>Reports
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("SalesReport", "Admin")">
+                                    <i class="fas fa-chart-line me-2"></i>Sales Reports
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("InventoryReport", "Admin")">
+                                    <i class="fas fa-boxes me-2"></i>Inventory Reports
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("CustomerReport", "Admin")">
+                                    <i class="fas fa-user-chart me-2"></i>Customer Reports
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <!-- Right side nav -->
+                    <ul class="navbar-nav">
+                        <!-- Notifications -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    3
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                                <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-shopping-cart text-primary me-2"></i>
+                                    <small>New order received</small>
+                                </a></li>
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <small>Low stock alert</small>
+                                </a></li>
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-user text-success me-2"></i>
+                                    <small>New customer registered</small>
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center" href="@Url.Action("Notifications", "Admin")">View All</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Admin Profile -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminProfileDropdown" role="button" data-bs-toggle="dropdown">
+                                @{
+                                    var userName = "Admin"; // Default value
+                                    try 
+                                    {
+                                        // Safe session access with null checks
+                                        userName = Context?.Session?.GetString("UserName") ??
+                                                  Context?.Session?.GetString("FirstName") ??
+                                                  "Admin";
+                                    }
+                                    catch 
+                                    {
+                                        userName = "Admin";
+                                    }
+                                }
+                                <i class="fas fa-user-shield me-1"></i>@userName
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("Profile", "Admin")">
+                                    <i class="fas fa-user-edit me-2"></i>My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Admin")">
+                                    <i class="fas fa-cog me-2"></i>Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Home")" target="_blank">
+                                    <i class="fas fa-external-link-alt me-2"></i>View Website
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <!-- Sidebar (Optional - can be toggled) -->
+            <div class="col-md-2 d-none d-md-block">
+                <div class="admin-sidebar bg-light rounded p-3 shadow-sm">
+                    <h6 class="fw-bold mb-3 text-muted">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("AddCar", "Admin")" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Car
+                        </a>
+                        <a href="@Url.Action("AddCarPart", "Admin")" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Part
+                        </a>
+                        <a href="@Url.Action("ManageOrders", "Admin")" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-box me-1"></i>Orders
+                        </a>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <h6 class="fw-bold mb-3 text-muted">System Status</h6>
+                    <div class="status-item mb-2">
+                        <small class="text-muted">Server Status</small>
+                        <div><span class="badge bg-success">Online</span></div>
+                    </div>
+                    <div class="status-item mb-2">
+                        <small class="text-muted">Database</small>
+                        <div><span class="badge bg-success">Connected</span></div>
+                    </div>
+                    <div class="status-item">
+                        <small class="text-muted">Last Backup</small>
+                        <div><small class="text-muted">2 hours ago</small></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10">
+                <!-- Alert Messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["InfoMessage"] != null)
+                {
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>@TempData["InfoMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["WarningMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                <!-- Breadcrumb Navigation -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="@Url.Action("Dashboard", "Admin")" class="text-decoration-none">
+                                <i class="fas fa-home me-1"></i>Admin
+                            </a>
+                        </li>
+                        @{
+                            // Safe ViewData access with null checks
+                            var breadcrumbItems = ViewData["BreadcrumbItems"] as List<dynamic>;
+                        }
+                        @if (breadcrumbItems != null && breadcrumbItems.Any())
+                        {
+                            @foreach (var item in breadcrumbItems)
+                            {
+                                @try 
+                                {
+                                    @if (item?.IsActive == true)
+                                    {
+                                        <li class="breadcrumb-item active" aria-current="page">@(item.Title ?? "Unknown")</li>
+                                    }
+                                    else
+                                    {
+                                        <li class="breadcrumb-item">
+                                            <a href="@(item?.Url ?? "#")" class="text-decoration-none">@(item?.Title ?? "Unknown")</a>
+                                        </li>
+                                    }
+                                }
+                                catch
+                                {
+                                    <li class="breadcrumb-item">Unknown</li>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">@(ViewData["Title"] ?? "Dashboard")</li>
+                        }
+                    </ol>
+                </nav>
+                
+                <!-- Page Content -->
+                <main role="main">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="admin-footer bg-light text-center py-3 mt-5">
+        <div class="container-fluid">
+            <small class="text-muted">
+                &copy; @DateTime.Now.Year ABC Car Traders (Pvt) Ltd. - Admin Panel v1.0 | 
+                <span id="currentTime"></span>
+            </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <!-- Chart.js for admin charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Admin Custom JS -->
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    
+    <!-- Real-time clock -->
+    <script>
+        function updateClock() {
+            try {
+                const now = new Date();
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = now.toLocaleString();
+                }
+            } catch (error) {
+                console.log('Clock update error:', error);
+            }
+        }
+        
+        // Initialize clock
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

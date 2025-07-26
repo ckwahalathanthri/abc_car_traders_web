@@ -1,0 +1,346 @@
+﻿@model PaginationViewModel
+
+@{
+    // Pagination Partial View
+    // Generates Bootstrap pagination controls with customizable options
+
+    if (Model == null || Model.TotalPages <= 1)
+    {
+        return; // Don't show pagination if there's only one page or no data
+    }
+
+    var currentPage = Model.CurrentPage;
+    var totalPages = Model.TotalPages;
+    var pageSize = Model.PageSize;
+    var totalItems = Model.TotalItems;
+    var controller = Model.Controller ?? ViewContext.RouteData.Values["Controller"]?.ToString();
+    var action = Model.Action ?? ViewContext.RouteData.Values["Action"]?.ToString();
+    var routeValues = Model.RouteValues ?? new Dictionary<string, object>();
+
+    // Calculate pagination window
+    var startPage = Math.Max(1, currentPage - 2);
+    var endPage = Math.Min(totalPages, currentPage + 2);
+
+    // Adjust window if we're near the edges
+    if (endPage - startPage < 4)
+    {
+        if (startPage == 1)
+        {
+            endPage = Math.Min(totalPages, startPage + 4);
+        }
+        else if (endPage == totalPages)
+        {
+            startPage = Math.Max(1, endPage - 4);
+        }
+    }
+}
+
+<div class="pagination-container">
+    <!-- Pagination Info -->
+    <div class="row align-items-center mb-3">
+        <div class="col-md-6">
+            <p class="pagination-info text-muted mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                Showing
+                <strong>@(((currentPage - 1) * pageSize) + 1)</strong>
+                to
+                <strong>@(Math.Min(currentPage * pageSize, totalItems))</strong>
+                of
+                <strong>@totalItems</strong>
+                @(totalItems == 1 ? "result" : "results")
+            </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <!-- Items per page selector -->
+            @if (Model.ShowPageSizeSelector)
+            {
+                <div class="d-inline-flex align-items-center">
+                    <label class="form-label me-2 mb-0 text-muted">Show:</label>
+                    <select class="form-select form-select-sm page-size-selector" style="width: auto;" onchange="changePageSize(this.value)">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            var isSelected = pageSize == size ? "selected" : null;
+                            <option value="@size" selected="@isSelected">@size</option>
+                        }
+                    </select>
+                    <span class="text-muted ms-2">per page</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+
+                <!-- First Page Button -->
+                @if (Model.ShowFirstLast && currentPage > 3)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(1, routeValues, pageSize, action, controller)" aria-label="First Page" title="First Page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                }
+
+                <!-- Previous Page Button -->
+                @if (currentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(currentPage - 1, routeValues, pageSize, action, controller)" aria-label="Previous Page" title="Previous Page">
+                            <i class="fas fa-angle-left"></i>
+                            @if (Model.ShowPreviousNext)
+                            {
+                                <span class="d-none d-sm-inline ms-1">Previous</span>
+                            }
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            <i class="fas fa-angle-left"></i>
+                            @if (Model.ShowPreviousNext)
+                            {
+                                <span class="d-none d-sm-inline ms-1">Previous</span>
+                            }
+                        </span>
+                    </li>
+                }
+
+                <!-- Page Numbers -->
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    if (i == currentPage)
+                    {
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">
+                                @i
+                                <span class="visually-hidden">(current)</span>
+                            </span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@GetPageUrl(i, routeValues, pageSize, action, controller)" title="Go to page @i">@i</a>
+                        </li>
+                    }
+                }
+
+                <!-- Ellipsis and Last Pages -->
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+
+                    @if (Model.ShowFirstLast)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@GetPageUrl(totalPages, routeValues, pageSize, action, controller)" title="Go to page @totalPages">@totalPages</a>
+                        </li>
+                    }
+                }
+
+                <!-- Next Page Button -->
+                @if (currentPage < totalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(currentPage + 1, routeValues, pageSize, action, controller)" aria-label="Next Page" title="Next Page">
+                            @if (Model.ShowPreviousNext)
+                            {
+                                <span class="d-none d-sm-inline me-1">Next</span>
+                            }
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            @if (Model.ShowPreviousNext)
+                            {
+                                <span class="d-none d-sm-inline me-1">Next</span>
+                            }
+                            <i class="fas fa-angle-right"></i>
+                        </span>
+                    </li>
+                }
+
+                <!-- Last Page Button -->
+                @if (Model.ShowFirstLast && currentPage < totalPages - 2)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(totalPages, routeValues, pageSize, action, controller)" aria-label="Last Page" title="Last Page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                }
+
+            </ul>
+        </nav>
+    }
+
+    <!-- Jump to Page (for large datasets) -->
+    @if (Model.ShowJumpToPage && totalPages > 10)
+    {
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <div class="d-inline-flex align-items-center">
+                    <label class="form-label me-2 mb-0 text-muted">Jump to page:</label>
+                    <input type="number" class="form-control form-control-sm jump-to-page"
+                           style="width: 80px;" min="1" max="@totalPages"
+                           placeholder="@currentPage" onkeypress="return jumpToPageOnEnter(event)">
+                    <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="jumpToPage()">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetPageUrl(int page, Dictionary<string, object> routeValues, int pageSize, string action, string controller)
+    {
+        var values = new RouteValueDictionary(routeValues);
+        values["page"] = page;
+
+        if (pageSize != 25) // Default page size
+        {
+            values["pageSize"] = pageSize;
+        }
+
+        return Url.Action(action, controller, values);
+    }
+}
+
+<style>
+    .pagination-container {
+        margin: 2rem 0;
+    }
+
+    .pagination-info {
+        font-size: 0.9rem;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        border: 1px solid #dee2e6;
+        padding: 0.5rem 0.75rem;
+        margin: 0 2px;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+    }
+
+        .pagination .page-link:hover {
+            color: #0a58ca;
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-1px);
+        }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+        font-weight: 600;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+
+    .page-size-selector {
+        min-width: 70px;
+    }
+
+    .jump-to-page {
+        text-align: center;
+    }
+
+    /* Mobile responsive */
+    @@media (max-width: 576px) {
+        .pagination .page-link
+
+    {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.875rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .d-none.d-sm-inline {
+        display: none !important;
+    }
+
+    .page-size-selector {
+        min-width: 60px;
+    }
+
+    }
+
+    /* Animation */
+    .pagination .page-link {
+        transition: all 0.15s ease-in-out;
+    }
+
+    .pagination .page-item:not(.disabled) .page-link:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script>
+    function changePageSize(newPageSize) {
+        const url = new URL(window.location);
+        url.searchParams.set('pageSize', newPageSize);
+        url.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = url.toString();
+    }
+
+    function jumpToPage() {
+        const input = document.querySelector('.jump-to-page');
+        const page = parseInt(input.value);
+        const maxPage = @totalPages;
+
+        if (page && page >= 1 && page <= maxPage) {
+            const url = '@GetPageUrl(0, routeValues, pageSize, action, controller)'.replace('page=0', 'page=' + page);
+            window.location.href = url;
+        } else {
+            alert('Please enter a valid page number between 1 and ' + maxPage);
+            input.focus();
+        }
+    }
+
+    function jumpToPageOnEnter(event) {
+        if (event.key === 'Enter') {
+            jumpToPage();
+            return false;
+        }
+        return true;
+    }
+
+    // Auto-focus jump to page input when clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        const jumpInput = document.querySelector('.jump-to-page');
+        if (jumpInput) {
+            jumpInput.addEventListener('click', function() {
+                this.select();
+            });
+        }
+    });
+</script>

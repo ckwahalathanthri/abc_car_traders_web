@@ -1,0 +1,624 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarPartSearchResultsViewModel
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.SearchQuery) ? $"Search Results for '{Model.SearchQuery}'" : "Car Parts Search Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-success text-white py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-search me-3"></i>Car Parts Search
+                </h1>
+                @@if (!string.IsNullOrEmpty(Model.SearchQuery))
+                {
+                <p class="lead mb-0">Results for: "<strong>@Model.SearchQuery</strong>"</p>
+                }
+                else
+                {
+                    <p class="lead mb-0">Find the perfect car parts for your vehicle</p>
+                }
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="search-stats text-white">
+                    <div class="h4 fw-bold mb-1">@Model.TotalResults</div>
+                    <div>parts found</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Search Bar -->
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Search" method="get" class="search-form">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" name="searchTerm" class="form-control form-control-lg"
+                                           placeholder="Part name, part number..."
+                                           value="@Model.SearchQuery" autocomplete="off" id="searchInput">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" name="partNumber" class="form-control form-control-lg" 
+                                       placeholder="Part number (e.g., BP123)" id="partNumberInput">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" name="compatibility" class="form-control form-control-lg" 
+                                       placeholder="Vehicle (e.g., Toyota Camry)" id="compatibilityInput">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Filters -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="quick-filters d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="me-3 fw-semibold">Quick Filters:</span>
+                                    <a href="?searchTerm=@Model.SearchQuery&category=engine" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-cog me-1"></i>Engine Parts
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchQuery&category=brake" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-circle me-1"></i>Brake Parts
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchQuery&category=suspension" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-car me-1"></i>Suspension
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchQuery&category=electrical" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-bolt me-1"></i>Electrical
+                                    </a>
+                                    <a href="?searchTerm=@Model.SearchQuery&inStock=true" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-check me-1"></i>In Stock Only
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Suggestions (if no results) -->
+@if (Model.TotalResults == 0 && !string.IsNullOrEmpty(Model.SearchQuery))
+{
+    <div class="container mb-4">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>No parts found for "@Model.SearchQuery"
+            </h5>
+            <p class="mb-3">Try these suggestions to find the parts you need:</p>
+            <ul class="mb-3">
+                <li>Check your spelling and try again</li>
+                <li>Use the exact part number if you have it</li>
+                <li>Try searching by vehicle make and model</li>
+                <li>Use more general terms (e.g., "brake pad" instead of "BP4567-ABC")</li>
+                <li>Browse our categories below</li>
+            </ul>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="@Url.Action("Index", "CarParts")" class="btn btn-success">
+                    <i class="fas fa-cogs me-2"></i>Browse All Parts
+                </a>
+                <a href="@Url.Action("Category", "CarParts", new { id = 1 })" class="btn btn-outline-success">
+                    <i class="fas fa-tags me-2"></i>View Categories
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Results Section -->
+@if (Model.TotalResults > 0)
+{
+    <div class="container">
+        <!-- Results Header -->
+        <div class="results-header mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="results-info mb-2">
+                    <h4 class="mb-0">
+                        @Model.SearchResults.Count of @Model.TotalResults parts
+                        @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                        {
+                            <span class="text-muted">matching "@Model.SearchQuery"</span>
+                        }
+                    </h4>
+                </div>
+                
+                <div class="d-flex gap-2 align-items-center mb-2">
+                    <!-- View Toggle -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" 
+                                onclick="toggleView('grid')" id="gridViewBtn">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                onclick="toggleView('list')" id="listViewBtn">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="sortResults(this.value)">
+                        <option value="">Sort By Relevance</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="name_asc">Name: A to Z</option>
+                        <option value="brand_asc">Brand: A to Z</option>
+                        <option value="stock_desc">Stock: High to Low</option>
+                        <option value="newest">Newest First</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Active Filters -->
+            <div class="active-filters">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                    {
+                        <span class="badge bg-success">
+                            Search: @Model.SearchQuery
+                            <a href="@Url.Action("Search")" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                    }
+                    <!-- Additional filter badges would go here based on URL parameters -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Results Grid -->
+        <div id="searchResults">
+            <div class="parts-grid" id="gridContainer">
+                <div class="row g-4">
+                    @foreach (var part in Model.SearchResults)
+                    {
+                        <div class="col-xl-3 col-lg-4 col-md-6">
+                            <div class="part-card card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <img src="@(part.ImageUrl ?? "/images/placeholder-part.jpg")" 
+                                         class="card-img-top part-image" alt="@part.PartName">
+                                    
+                                    <!-- Part Number Badge -->
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                        #@part.PartNumber
+                                    </span>
+                                    
+                                    <!-- Stock Status -->
+                                    @if (part.StockQuantity == 0)
+                                    {
+                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                            Out of Stock
+                                        </span>
+                                    }
+                                    else if (part.StockQuantity <= 10)
+                                    {
+                                        <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                            Low Stock
+                                        </span>
+                                    }
+                                    
+                                    <!-- Relevance Score (if search term exists) -->
+                                    @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                                    {
+                                        <div class="relevance-indicator position-absolute bottom-0 start-0 m-2">
+                                            <span class="badge bg-dark bg-opacity-75">
+                                                <i class="fas fa-star text-warning me-1"></i>Match
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="part-header mb-2">
+                                        <h5 class="card-title mb-1">
+                                            @Html.Raw(HighlightSearchTerm(part.PartName, Model.SearchQuery))
+                                        </h5>
+                                        <div class="part-meta">
+                                            <span class="badge bg-light text-dark me-1">@part.BrandName</span>
+                                            <span class="badge bg-secondary">@part.CategoryName</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="part-details mb-3">
+                                        <div class="small text-muted">
+                                            <div class="mb-1">
+                                                <i class="fas fa-barcode me-1"></i>
+                                                Part #: <strong>@Html.Raw(HighlightSearchTerm(part.PartNumber, Model.SearchQuery))</strong>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(part.Compatibility))
+                                            {
+                                                <div class="mb-1">
+                                                    <i class="fas fa-car me-1"></i>
+                                                    @(part.Compatibility.Length > 25 ? part.Compatibility.Substring(0, 25) + "..." : part.Compatibility)
+                                                </div>
+                                            }
+                                            <div>
+                                                <i class="fas fa-boxes me-1"></i>
+                                                Stock: @part.StockQuantity units
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="part-price mb-3">
+                                        <h4 class="text-success fw-bold mb-0">@part.FormattedPrice</h4>
+                                    </div>
+                                    
+                                    <div class="part-actions">
+                                        <div class="row g-2">
+                                            <div class="col-8">
+                                                <a href="@Url.Action("Details", new { id = part.CarPartId })" 
+                                                   class="btn btn-success w-100">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                            </div>
+                                            <div class="col-4">
+                                                @if (part.IsAvailable && part.StockQuantity > 0)
+                                                {
+                                                    <button type="button" class="btn btn-outline-primary w-100" 
+                                                            onclick="addToCart(@part.CarPartId)" title="Add to Cart">
+                                                        <i class="fas fa-cart-plus"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-secondary w-100" disabled>
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- List View (Hidden by default) -->
+            <div class="parts-list d-none" id="listContainer">
+                @foreach (var part in Model.SearchResults)
+                {
+                    <div class="part-list-item card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <img src="@(part.ImageUrl ?? "/images/placeholder-part.jpg")" 
+                                         class="img-fluid rounded" alt="@part.PartName"
+                                         style="height: 120px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold">
+                                        @Html.Raw(HighlightSearchTerm(part.PartName, Model.SearchQuery))
+                                    </h5>
+                                    <div class="part-specs mb-2">
+                                        <span class="badge bg-primary me-1">#@Html.Raw(HighlightSearchTerm(part.PartNumber, Model.SearchQuery))</span>
+                                        <span class="badge bg-light text-dark me-1">@part.BrandName</span>
+                                        <span class="badge bg-secondary">@part.CategoryName</span>
+                                    </div>
+                                    <div class="part-features text-muted small">
+                                        @if (!string.IsNullOrEmpty(part.Compatibility))
+                                        {
+                                            <div class="mb-1">
+                                                <i class="fas fa-car me-1"></i>
+                                                Compatible: @part.Compatibility
+                                            </div>
+                                        }
+                                        <div>
+                                            <i class="fas fa-boxes me-1"></i>
+                                            Stock: @part.StockQuantity units
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <h4 class="text-success fw-bold mb-3">@part.FormattedPrice</h4>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a href="@Url.Action("Details", new { id = part.CarPartId })" 
+                                           class="btn btn-success">View Details</a>
+                                        @if (part.IsAvailable && part.StockQuantity > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    onclick="addToCart(@part.CarPartId)">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+        {
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @if (Model.Pagination.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?searchTerm=@Model.SearchQuery&page=@(Model.Pagination.CurrentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    
+                    @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); 
+                          i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); 
+                          i++)
+                    {
+                        <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="?searchTerm=@Model.SearchQuery&page=@i">@i</a>
+                        </li>
+                    }
+                    
+                    @if (Model.Pagination.CurrentPage < Model.Pagination.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?searchTerm=@Model.SearchQuery&page=@(Model.Pagination.CurrentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+        
+        <!-- Search Tips -->
+        <div class="search-tips mt-5">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>Search Tips for Car Parts
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use exact part numbers for best results</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Include your vehicle make and model</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Try both generic and brand names</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Check part compatibility information</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use filters to narrow down results</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Contact us if you need help finding a part</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    public string HighlightSearchTerm(string text, string searchTerm)
+    {
+        if (string.IsNullOrEmpty(searchTerm) || string.IsNullOrEmpty(text))
+            return text;
+            
+        var words = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var word in words)
+        {
+            if (word.Length >= 2)
+            {
+                text = System.Text.RegularExpressions.Regex.Replace(
+                    text, 
+                    $"({System.Text.RegularExpressions.Regex.Escape(word)})", 
+                    "<mark class=\"bg-warning\">$1</mark>", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+            }
+        }
+        return text;
+    }
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    }
+    
+    .part-card {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .part-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .part-image {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .search-form {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    .quick-filters .btn {
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+    
+    .active-filters .badge {
+        font-size: 0.875rem;
+        padding: 0.5em 0.75em;
+        border-radius: 8px;
+    }
+    
+    .relevance-indicator {
+        opacity: 0.9;
+    }
+    
+    mark {
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    
+    .part-list-item img {
+        max-width: 150px;
+    }
+    
+    .search-tips {
+        border-top: 1px solid #dee2e6;
+        padding-top: 2rem;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    @@media (max-width: 768px) {
+        .part-image {
+            height: 180px;
+        }
+        
+        .search-stats {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .quick-filters {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function toggleView(viewType) {
+        const gridContainer = document.getElementById('gridContainer');
+        const listContainer = document.getElementById('listContainer');
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
+        
+        if (viewType === 'grid') {
+            gridContainer.classList.remove('d-none');
+            listContainer.classList.add('d-none');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        } else {
+            gridContainer.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+        }
+        
+        localStorage.setItem('partSearchViewPreference', viewType);
+    }
+    
+    function sortResults(sortBy) {
+        if (sortBy) {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', sortBy);
+            window.location.href = url.toString();
+        }
+    }
+    
+    function addToCart(partId) {
+        if (!@(Context.Session.GetString("UserId") != null ? "true" : "false")) {
+            window.location.href = '@Url.Action("Login", "Account")';
+            return;
+        }
+        
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ itemId: partId, itemType: 'CarPart', quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Part added to cart successfully!');
+                updateCartCount();
+            } else {
+                alert('Error adding part to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the part to cart.');
+        });
+    }
+    
+    function updateCartCount() {
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+    
+    // Load user's view preference
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewPreference = localStorage.getItem('partSearchViewPreference') || 'grid';
+        toggleView(viewPreference);
+        
+        // Auto-focus search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && !searchInput.value) {
+            searchInput.focus();
+        }
+    });
+    
+    // Enhanced search suggestions
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const partNumberInput = document.getElementById('partNumberInput');
+        const compatibilityInput = document.getElementById('compatibilityInput');
+        
+        // Add search suggestions/autocomplete functionality here
+        [searchInput, partNumberInput, compatibilityInput].forEach(input => {
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Implementation for search suggestions would go here
+                });
+            }
+        });
+    });
+</script>

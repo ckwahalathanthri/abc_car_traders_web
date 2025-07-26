@@ -1,0 +1,624 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarListViewModel
+@{
+    ViewData["Title"] = "Browse Cars";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header bg-gradient-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="fas fa-car me-3"></i>Browse Our Cars
+                </h1>
+                <p class="lead mb-0">Discover quality vehicles from trusted brands</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-overview text-white">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span class="fw-bold">@Model.TotalCars</span> Cars Available
+                    </div>
+                    <div>
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Starting from <span class="fw-bold">@Model.MinPrice.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="filters-sidebar">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter me-2"></i>Filter Cars
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <form asp-action="Index" method="get" id="filterForm">
+                            <!-- Search -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-search me-2 text-primary"></i>Search
+                                </label>
+                                <input asp-for="SearchModel.SearchTerm" class="form-control" 
+                                       placeholder="Search cars, models..." />
+                            </div>
+                            
+                            <!-- Price Range -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-2 text-success"></i>Price Range
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input asp-for="SearchModel.MinPrice" type="number" 
+                                               class="form-control form-control-sm" placeholder="Min" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input asp-for="SearchModel.MaxPrice" type="number" 
+                                               class="form-control form-control-sm" placeholder="Max" />
+                                    </div>
+                                </div>
+                                <div class="price-range-display mt-2 small text-muted">
+                                    Available: @Model.MinPrice.ToString("C") - @Model.MaxPrice.ToString("C")
+                                </div>
+                            </div>
+                            
+                            <!-- Brand -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-star me-2 text-warning"></i>Brand
+                                </label>
+                                <select asp-for="SearchModel.BrandId" asp-items="Model.Brands" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Brands</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-tags me-2 text-info"></i>Category
+                                </label>
+                                <select asp-for="SearchModel.CategoryId" asp-items="Model.Categories" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Year Range -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-2 text-secondary"></i>Year
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <select asp-for="SearchModel.MinYear" asp-items="Model.Years" 
+                                                class="form-select form-select-sm">
+                                            <option value="">Min Year</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <select asp-for="SearchModel.MaxYear" asp-items="Model.Years" 
+                                                class="form-select form-select-sm">
+                                            <option value="">Max Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Fuel Type -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-gas-pump me-2 text-danger"></i>Fuel Type
+                                </label>
+                                <select asp-for="SearchModel.FuelType" asp-items="Model.FuelTypes" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Fuel Types</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Transmission -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-cogs me-2 text-dark"></i>Transmission
+                                </label>
+                                <select asp-for="SearchModel.Transmission" asp-items="Model.Transmissions" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Transmissions</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Color -->
+                            <div class="filter-section p-3 border-bottom">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-palette me-2 text-purple"></i>Color
+                                </label>
+                                <select asp-for="SearchModel.Color" asp-items="Model.Colors" 
+                                        class="form-select form-select-sm">
+                                    <option value="">All Colors</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Filter Actions -->
+                            <div class="filter-actions p-3">
+                                <button type="submit" class="btn btn-primary w-100 mb-2">
+                                    <i class="fas fa-search me-2"></i>Apply Filters
+                                </button>
+                                <a href="@Url.Action("Index", "Cars")" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-refresh me-2"></i>Clear All
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Results Header -->
+            <div class="results-header mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="results-info mb-2">
+                        <h4 class="mb-0">
+                            Showing @Model.Cars.Count of @Model.TotalCars cars
+                            @if (!string.IsNullOrEmpty(Model.SearchModel.SearchTerm))
+                            {
+                                <span class="text-muted">for "@Model.SearchModel.SearchTerm"</span>
+                            }
+                        </h4>
+                    </div>
+                    
+                    <div class="d-flex gap-2 align-items-center mb-2">
+                        <!-- View Toggle -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="toggleView('grid')" id="gridView">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="toggleView('list')" id="listView">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Sort Options -->
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="sortCars(this.value)">
+                            <option value="">Sort By</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="year_desc">Year: Newest First</option>
+                            <option value="year_asc">Year: Oldest First</option>
+                            <option value="mileage_asc">Mileage: Low to High</option>
+                            <option value="brand_asc">Brand: A to Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cars Grid/List -->
+            <div id="carsContainer">
+                @if (Model.Cars?.Any() == true)
+                {
+                    <div class="cars-grid" id="gridContainer">
+                        <div class="row g-4">
+                            @foreach (var car in Model.Cars)
+                            {
+                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                    <div class="car-card card h-100 border-0 shadow-sm">
+                                        <div class="position-relative">
+                                            <img src="@(car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                                 class="card-img-top car-image" alt="@car.BrandName @car.Model">
+                                            
+                                            <!-- Year Badge -->
+                                            <span class="badge bg-primary position-absolute top-0 start-0 m-2">
+                                                @car.Year
+                                            </span>
+                                            
+                                            <!-- Stock Status -->
+                                            @if (car.StockQuantity == 0)
+                                            {
+                                                <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                                    Out of Stock
+                                                </span>
+                                            }
+                                            else if (car.StockQuantity <= 3)
+                                            {
+                                                <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                                    Low Stock
+                                                </span>
+                                            }
+                                            
+                                            <!-- Quick Actions -->
+                                            <div class="car-actions position-absolute bottom-0 end-0 m-2 d-none">
+                                                <div class="btn-group-vertical" role="group">
+                                                    <button type="button" class="btn btn-light btn-sm" 
+                                                            onclick="addToWishlist(@car.CarId)" title="Add to Wishlist">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-light btn-sm" 
+                                                            onclick="addToCompare(@car.CarId)" title="Compare">
+                                                        <i class="fas fa-balance-scale"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body">
+                                            <div class="car-header mb-2">
+                                                <h5 class="card-title mb-1">@car.BrandName @car.Model</h5>
+                                                <span class="badge bg-light text-dark">@car.CategoryName</span>
+                                            </div>
+                                            
+                                            <div class="car-details mb-3">
+                                                <div class="row g-2 text-muted small">
+                                                    <div class="col-6">
+                                                        <i class="fas fa-gas-pump me-1"></i>@car.FuelType
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <i class="fas fa-cogs me-1"></i>@car.Transmission
+                                                    </div>
+                                                    @if (car.Mileage.HasValue)
+                                                    {
+                                                        <div class="col-6">
+                                                            <i class="fas fa-tachometer-alt me-1"></i>@car.Mileage.Value.ToString("N0") km
+                                                        </div>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(car.Color))
+                                                    {
+                                                        <div class="col-6">
+                                                            <i class="fas fa-palette me-1"></i>@car.Color
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="car-price mb-3">
+                                                <h4 class="text-success fw-bold mb-0">@car.FormattedPrice</h4>
+                                            </div>
+                                            
+                                            <div class="car-actions">
+                                                <div class="row g-2">
+                                                    <div class="col-8">
+                                                        <a href="@Url.Action("Details", new { id = car.CarId })" 
+                                                           class="btn btn-primary w-100">
+                                                            <i class="fas fa-eye me-1"></i>View Details
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        @if (car.IsAvailable && car.StockQuantity > 0)
+                                                        {
+                                                            <button type="button" class="btn btn-outline-success w-100" 
+                                                                    onclick="addToCart(@car.CarId)" title="Add to Cart">
+                                                                <i class="fas fa-cart-plus"></i>
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" class="btn btn-secondary w-100" disabled>
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- List View (Hidden by default) -->
+                    <div class="cars-list d-none" id="listContainer">
+                        @foreach (var car in Model.Cars)
+                        {
+                            <div class="car-list-item card mb-3 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <img src="@(car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                                 class="img-fluid rounded" alt="@car.BrandName @car.Model">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5 class="fw-bold">@car.BrandName @car.Model</h5>
+                                            <div class="car-specs mb-2">
+                                                <span class="badge bg-primary me-1">@car.Year</span>
+                                                <span class="badge bg-light text-dark me-1">@car.CategoryName</span>
+                                                <span class="badge bg-secondary me-1">@car.FuelType</span>
+                                                <span class="badge bg-info text-white">@car.Transmission</span>
+                                            </div>
+                                            <div class="car-features text-muted small">
+                                                @if (car.Mileage.HasValue)
+                                                {
+                                                    <span class="me-3"><i class="fas fa-tachometer-alt me-1"></i>@car.Mileage.Value.ToString("N0") km</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(car.Color))
+                                                {
+                                                    <span class="me-3"><i class="fas fa-palette me-1"></i>@car.Color</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(car.EngineCapacity))
+                                                {
+                                                    <span><i class="fas fa-engine me-1"></i>@car.EngineCapacity</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <h4 class="text-success fw-bold mb-3">@car.FormattedPrice</h4>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <a href="@Url.Action("Details", new { id = car.CarId })" 
+                                                   class="btn btn-primary">View Details</a>
+                                                @if (car.IsAvailable && car.StockQuantity > 0)
+                                                {
+                                                    <button type="button" class="btn btn-outline-success" 
+                                                            onclick="addToCart(@car.CarId)">
+                                                        <i class="fas fa-cart-plus"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- No Results -->
+                    <div class="no-results text-center py-5">
+                        <i class="fas fa-car fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted mb-3">No Cars Found</h3>
+                        <p class="text-muted mb-4">
+                            We couldn't find any cars matching your criteria. 
+                            Try adjusting your filters or search terms.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="@Url.Action("Index", "Cars")" class="btn btn-primary">
+                                <i class="fas fa-refresh me-2"></i>Clear Filters
+                            </a>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <!-- Pagination -->
+            @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+            {
+                <nav aria-label="Cars pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.Pagination.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.Pagination.CurrentPage - 1)">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); 
+                              i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); 
+                              i++)
+                        {
+                            <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.Pagination.CurrentPage < Model.Pagination.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.Pagination.CurrentPage + 1)">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    }
+    
+    .car-card {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .car-card:hover .car-actions {
+        display: block !important;
+    }
+    
+    .car-image {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .filter-section {
+        transition: background-color 0.3s ease;
+    }
+    
+    .filter-section:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .car-list-item img {
+        height: 120px;
+        object-fit: cover;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.4em 0.6em;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    @@media (max-width: 768px) {
+        .filters-sidebar .card {
+            position: relative !important;
+            top: auto !important;
+        }
+        
+        .car-image {
+            height: 180px;
+        }
+    }
+</style>
+
+<script>
+    function toggleView(viewType) {
+        const gridContainer = document.getElementById('gridContainer');
+        const listContainer = document.getElementById('listContainer');
+        const gridBtn = document.getElementById('gridView');
+        const listBtn = document.getElementById('listView');
+        
+        if (viewType === 'grid') {
+            gridContainer.classList.remove('d-none');
+            listContainer.classList.add('d-none');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        } else {
+            gridContainer.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+        }
+        
+        localStorage.setItem('carViewPreference', viewType);
+    }
+    
+    function sortCars(sortBy) {
+        if (sortBy) {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', sortBy);
+            window.location.href = url.toString();
+        }
+    }
+    
+    function addToCart(carId) {
+        if (!@(Context.Session.GetString("UserId") != null ? "true" : "false")) {
+            window.location.href = '@Url.Action("Login", "Account")';
+            return;
+        }
+        
+        fetch('@Url.Action("AddToCart", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ itemId: carId, itemType: 'Car', quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Car added to cart successfully!');
+                // Update cart count if visible
+                updateCartCount();
+            } else {
+                alert('Error adding car to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the car to cart.');
+        });
+    }
+    
+    function addToWishlist(carId) {
+        // Implementation for wishlist functionality
+        alert('Wishlist functionality coming soon!');
+    }
+    
+    function addToCompare(carId) {
+        // Implementation for compare functionality
+        let compareList = JSON.parse(localStorage.getItem('carCompare') || '[]');
+        if (compareList.length >= 4) {
+            alert('You can compare maximum 4 cars at a time.');
+            return;
+        }
+        
+        if (compareList.includes(carId)) {
+            alert('This car is already in your comparison list.');
+            return;
+        }
+        
+        compareList.push(carId);
+        localStorage.setItem('carCompare', JSON.stringify(compareList));
+        alert('Car added to comparison list!');
+    }
+    
+    function updateCartCount() {
+        // Update cart count in navigation
+        fetch('@Url.Action("GetCartCount", "Order")')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            });
+    }
+    
+    // Load user's view preference
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewPreference = localStorage.getItem('carViewPreference') || 'grid';
+        toggleView(viewPreference);
+    });
+    
+    // Auto-submit filters on change
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const filterInputs = filterForm.querySelectorAll('select, input');
+        
+        filterInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Add delay for better UX
+                clearTimeout(input.submitTimeout);
+                input.submitTimeout = setTimeout(() => {
+                    filterForm.submit();
+                }, 500);
+            });
+        });
+    });
+</script>

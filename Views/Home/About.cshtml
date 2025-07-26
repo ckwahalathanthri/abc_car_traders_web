@@ -1,0 +1,297 @@
+﻿@using ABCCarTraders.Controllers
+@model AboutViewModel
+@{
+    ViewData["Title"] = "About Us - ABC Car Traders";
+}
+
+<!-- Page Header -->
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold">About ABC Car Traders</h1>
+                <p class="lead">Your trusted partner in automotive excellence since @Model.EstablishedYear</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Company Overview -->
+<section class="company-overview py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h2 class="fw-bold mb-4">Our Story</h2>
+                <p class="text-muted mb-4">
+                    Founded in @Model.EstablishedYear, ABC Car Traders (Pvt) Ltd has been at the forefront of the automotive industry in Sri Lanka. 
+                    What started as a small family business has grown into one of the most trusted names in car sales and automotive parts distribution.
+                </p>
+                <p class="text-muted mb-4">
+                    Over the years, we have built our reputation on three core principles: quality, reliability, and customer satisfaction. 
+                    Our commitment to excellence has made us the preferred choice for thousands of customers across the country.
+                </p>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-primary fw-bold">@(DateTime.Now.Year - Model.EstablishedYear)+</h4>
+                        <p class="small text-muted">Years of Experience</p>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-success fw-bold">5000+</h4>
+                        <p class="small text-muted">Happy Customers</p>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-warning fw-bold">15+</h4>
+                        <p class="small text-muted">Expert Staff</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="~/images/about-showroom.jpg" alt="ABC Car Traders Showroom" class="img-fluid rounded shadow"
+                     onerror="this.src='~/images/placeholder-showroom.jpg'">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission & Vision -->
+<section class="mission-vision py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-bullseye fa-3x text-primary mb-4"></i>
+                        <h3 class="fw-bold mb-3">Our Mission</h3>
+                        <p class="text-muted">@Model.Mission</p>
+                        <div class="mt-4">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i>Quality assurance in every vehicle</li>
+                                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i>Transparent pricing and processes</li>
+                                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i>Exceptional customer service</li>
+                                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i>Long-term customer relationships</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-eye fa-3x text-success mb-4"></i>
+                        <h3 class="fw-bold mb-3">Our Vision</h3>
+                        <p class="text-muted">@Model.Vision</p>
+                        <div class="mt-4">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-star text-success me-2"></i>Market leadership in automotive sales</li>
+                                <li class="mb-2"><i class="fas fa-star text-success me-2"></i>Innovation in customer experience</li>
+                                <li class="mb-2"><i class="fas fa-star text-success me-2"></i>Sustainable business practices</li>
+                                <li class="mb-2"><i class="fas fa-star text-success me-2"></i>Community development</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="services py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-4">Our Services</h2>
+                <p class="lead text-muted">Comprehensive automotive solutions for all your needs</p>
+            </div>
+        </div>
+        <div class="row">
+            @for (int i = 0; i < Model.Services.Count; i++)
+            {
+                var iconClass = i switch {
+                    0 => "fas fa-car",
+                    1 => "fas fa-cog",
+                    2 => "fas fa-credit-card",
+                    3 => "fas fa-tools",
+                    4 => "fas fa-wrench",
+                    _ => "fas fa-headset"
+                };
+                
+                var colorClass = i switch {
+                    0 => "text-primary",
+                    1 => "text-success",
+                    2 => "text-warning",
+                    3 => "text-info",
+                    4 => "text-danger",
+                    _ => "text-secondary"
+                };
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm service-card">
+                        <div class="card-body text-center p-4">
+                            <i class="@iconClass fa-3x @colorClass mb-3"></i>
+                            <h5 class="fw-bold mb-3">@Model.Services[i]</h5>
+                            <p class="text-muted small">
+                                @switch (i)
+                                {
+                                    case 0:
+                                        @("Wide selection of new and pre-owned vehicles from trusted brands, all thoroughly inspected for quality and reliability.")
+                                        break;
+                                    case 1:
+                                        @("Authentic car parts and accessories from leading manufacturers, ensuring perfect fit and long-lasting performance.")
+                                        break;
+                                    case 2:
+                                        @("Flexible financing solutions with competitive rates to make your dream car more affordable.")
+                                        break;
+                                    case 3:
+                                        @("Comprehensive after-sales support including warranty, maintenance, and technical assistance.")
+                                        break;
+                                    case 4:
+                                        @("Professional maintenance services to keep your vehicle running at peak performance.")
+                                        break;
+                                    default:
+                                        @("Dedicated customer support team available to assist you with all your automotive needs.")
+                                        break;
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-choose-us py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-4">Why Choose Us?</h2>
+                <p class="lead text-muted">What sets us apart from the competition</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-certificate fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Certified Quality</h5>
+                    <p class="text-muted small">All vehicles undergo comprehensive inspection and come with quality certification.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Best Prices</h5>
+                    <p class="text-muted small">Competitive pricing with transparent costs and no hidden fees.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Expert Team</h5>
+                    <p class="text-muted small">Experienced professionals dedicated to helping you find the perfect vehicle.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Warranty</h5>
+                    <p class="text-muted small">Comprehensive warranty coverage for peace of mind with your purchase.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="team py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-4">Meet Our Team</h2>
+                <p class="lead text-muted">The experts behind ABC Car Traders</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm team-card">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">Rajesh Silva</h5>
+                        <p class="text-primary small">Managing Director</p>
+                        <p class="text-muted small">With over 20 years in the automotive industry, Rajesh leads our team with vision and expertise.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm team-card">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">Priya Fernando</h5>
+                        <p class="text-success small">Sales Manager</p>
+                        <p class="text-muted small">Priya ensures every customer finds their perfect vehicle with personalized service and expert guidance.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm team-card">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">Kumar Perera</h5>
+                        <p class="text-warning small">Technical Manager</p>
+                        <p class="text-muted small">Kumar oversees quality control and technical inspections, ensuring every vehicle meets our high standards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12">
+                <h2 class="fw-bold mb-3">Ready to Experience the ABC Difference?</h2>
+                <p class="lead mb-4">Join thousands of satisfied customers who trust ABC Car Traders for their automotive needs</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="@Url.Action("Index", "Cars")" class="btn btn-warning btn-lg">Browse Our Inventory</a>
+                    <a href="@Url.Action("Contact")" class="btn btn-outline-light btn-lg">Contact Us Today</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    .service-card:hover, .team-card:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+    
+    .service-card, .team-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .cta {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+</style>

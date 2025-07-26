@@ -1,0 +1,476 @@
+﻿<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    <span id="modalTitle">Confirm Action</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="fas fa-question-circle text-primary fa-2x" id="modalIcon"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-2" id="modalQuestion">Are you sure?</h6>
+                        <p class="text-muted mb-0" id="modalMessage">This action cannot be undone.</p>
+                        <div id="modalDetails" class="mt-2 text-muted small" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelButton">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmButton">
+                    <i class="fas fa-check me-1"></i>
+                    <span id="confirmButtonText">Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal (specialized version) -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    <span id="deleteModalTitle">Delete Confirmation</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action is permanent and cannot be undone.
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="fas fa-trash-alt text-danger fa-2x" id="deleteModalIcon"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-2" id="deleteModalQuestion">Are you sure you want to delete this item?</h6>
+                        <p class="text-muted mb-2" id="deleteModalMessage">This will permanently remove the item from the system.</p>
+                        <div id="deleteModalDetails" class="mt-2 p-2 bg-light border rounded" style="display: none;">
+                            <!-- Item details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="deleteConfirmButton">
+                    <i class="fas fa-trash-alt me-1"></i>
+                    <span id="deleteConfirmButtonText">Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Confirmation Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span id="successModalTitle">Success</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-4x"></i>
+                </div>
+                <h5 class="text-success mb-2" id="successMessage">Operation completed successfully!</h5>
+                <p class="text-muted" id="successDetails">Your request has been processed.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .modal-header {
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .border-danger {
+        border: 2px solid #dc3545 !important;
+    }
+    
+    .border-success {
+        border: 2px solid #198754 !important;
+    }
+    
+    .btn-close-white {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    
+    /* Animation for modal icons */
+    .modal .fa-2x, .modal .fa-4x {
+        animation: modalIconPulse 2s infinite;
+    }
+    
+    @@keyframes modalIconPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Loading state for buttons */
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .btn-loading .fas {
+        animation: spin 1s linear infinite;
+    }
+    
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile responsive */
+    @@media (max-width: 576px) {
+        .modal-dialog {
+            margin: 1rem;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+        }
+        
+        .modal-footer {
+            padding: 0.75rem 1rem;
+        }
+        
+        .modal .fa-2x {
+            font-size: 1.5em !important;
+        }
+        
+        .modal .fa-4x {
+            font-size: 2.5em !important;
+        }
+    }
+</style>
+
+<script>
+    // Global confirmation modal functionality
+    window.ConfirmationModal = {
+        // Show general confirmation modal
+        show: function(options = {}) {
+            const modal = document.getElementById('confirmationModal');
+            const defaults = {
+                title: 'Confirm Action',
+                icon: 'fas fa-question-circle text-primary',
+                question: 'Are you sure?',
+                message: 'This action cannot be undone.',
+                details: '',
+                confirmText: 'Confirm',
+                cancelText: 'Cancel',
+                confirmClass: 'btn-danger',
+                onConfirm: null,
+                onCancel: null
+            };
+            
+            const config = { ...defaults, ...options };
+            
+            // Update modal content
+            document.getElementById('modalTitle').textContent = config.title;
+            document.getElementById('modalIcon').className = config.icon;
+            document.getElementById('modalQuestion').textContent = config.question;
+            document.getElementById('modalMessage').textContent = config.message;
+            document.getElementById('confirmButtonText').textContent = config.confirmText;
+            document.getElementById('cancelButton').textContent = config.cancelText;
+            
+            // Update details if provided
+            const detailsElement = document.getElementById('modalDetails');
+            if (config.details) {
+                detailsElement.innerHTML = config.details;
+                detailsElement.style.display = 'block';
+            } else {
+                detailsElement.style.display = 'none';
+            }
+            
+            // Update confirm button class
+            const confirmButton = document.getElementById('confirmButton');
+            confirmButton.className = `btn ${config.confirmClass}`;
+            
+            // Set up event handlers
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            newConfirmButton.addEventListener('click', function() {
+                if (config.onConfirm) {
+                    const result = config.onConfirm();
+                    if (result !== false) {
+                        bootstrap.Modal.getInstance(modal).hide();
+                    }
+                } else {
+                    bootstrap.Modal.getInstance(modal).hide();
+                }
+            });
+            
+            // Show the modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            return bsModal;
+        },
+        
+        // Show delete confirmation modal
+        showDelete: function(options = {}) {
+            const modal = document.getElementById('deleteConfirmationModal');
+            const defaults = {
+                title: 'Delete Confirmation',
+                question: 'Are you sure you want to delete this item?',
+                message: 'This will permanently remove the item from the system.',
+                details: '',
+                confirmText: 'Delete',
+                itemName: '',
+                onConfirm: null
+            };
+            
+            const config = { ...defaults, ...options };
+            
+            // Update modal content
+            document.getElementById('deleteModalTitle').textContent = config.title;
+            document.getElementById('deleteModalQuestion').textContent = config.question;
+            document.getElementById('deleteModalMessage').textContent = config.message;
+            document.getElementById('deleteConfirmButtonText').textContent = config.confirmText;
+            
+            // Update details if provided
+            const detailsElement = document.getElementById('deleteModalDetails');
+            if (config.details) {
+                detailsElement.innerHTML = config.details;
+                detailsElement.style.display = 'block';
+            } else {
+                detailsElement.style.display = 'none';
+            }
+            
+            // Set up event handlers
+            const confirmButton = document.getElementById('deleteConfirmButton');
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            newConfirmButton.addEventListener('click', function() {
+                if (config.onConfirm) {
+                    // Add loading state
+                    this.classList.add('btn-loading');
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Deleting...';
+                    
+                    const result = config.onConfirm();
+                    if (result !== false) {
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(modal).hide();
+                        }, 500);
+                    } else {
+                        // Remove loading state if deletion failed
+                        this.classList.remove('btn-loading');
+                        this.innerHTML = `<i class="fas fa-trash-alt me-1"></i>${config.confirmText}`;
+                    }
+                } else {
+                    bootstrap.Modal.getInstance(modal).hide();
+                }
+            });
+            
+            // Show the modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            return bsModal;
+        },
+        
+        // Show success modal
+        showSuccess: function(options = {}) {
+            const modal = document.getElementById('successModal');
+            const defaults = {
+                title: 'Success',
+                message: 'Operation completed successfully!',
+                details: 'Your request has been processed.',
+                autoHide: true,
+                autoHideDelay: 3000
+            };
+            
+            const config = { ...defaults, ...options };
+            
+            // Update modal content
+            document.getElementById('successModalTitle').textContent = config.title;
+            document.getElementById('successMessage').textContent = config.message;
+            document.getElementById('successDetails').textContent = config.details;
+            
+            // Show the modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Auto-hide if configured
+            if (config.autoHide) {
+                setTimeout(() => {
+                    bsModal.hide();
+                }, config.autoHideDelay);
+            }
+            
+            return bsModal;
+        }
+    };
+    
+    // Convenience functions for common operations
+    window.confirmDelete = function(itemName, deleteUrl, options = {}) {
+        return ConfirmationModal.showDelete({
+            question: `Are you sure you want to delete "${itemName}"?`,
+            details: `<strong>Item:</strong> ${itemName}<br><strong>Action:</strong> Permanent deletion`,
+            onConfirm: function() {
+                // Perform AJAX delete or redirect
+                if (deleteUrl) {
+                    if (options.useAjax) {
+                        return fetch(deleteUrl, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                ConfirmationModal.showSuccess({
+                                    message: `${itemName} deleted successfully!`,
+                                    details: 'The item has been permanently removed.'
+                                });
+                                if (options.onSuccess) options.onSuccess();
+                                return true;
+                            } else {
+                                throw new Error('Delete failed');
+                            }
+                        })
+                        .catch(error => {
+                            alert('Failed to delete item. Please try again.');
+                            return false;
+                        });
+                    } else {
+                        window.location.href = deleteUrl;
+                        return true;
+                    }
+                }
+                return true;
+            },
+            ...options
+        });
+    };
+    
+    window.confirmAction = function(message, onConfirm, options = {}) {
+        return ConfirmationModal.show({
+            question: message,
+            onConfirm: onConfirm,
+            ...options
+        });
+    };
+    
+    // Auto-wire delete buttons with data attributes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-wire delete buttons
+        document.addEventListener('click', function(e) {
+            const deleteBtn = e.target.closest('[data-confirm-delete]');
+            if (deleteBtn) {
+                e.preventDefault();
+                
+                const itemName = deleteBtn.getAttribute('data-item-name') || 'this item';
+                const deleteUrl = deleteBtn.getAttribute('href') || deleteBtn.getAttribute('data-url');
+                const useAjax = deleteBtn.hasAttribute('data-ajax');
+                
+                confirmDelete(itemName, deleteUrl, { useAjax });
+            }
+            
+            // Auto-wire general confirmation buttons
+            const confirmBtn = e.target.closest('[data-confirm]');
+            if (confirmBtn) {
+                e.preventDefault();
+                
+                const message = confirmBtn.getAttribute('data-confirm');
+                const url = confirmBtn.getAttribute('href') || confirmBtn.getAttribute('data-url');
+                
+                confirmAction(message, function() {
+                    if (url) {
+                        window.location.href = url;
+                    }
+                    return true;
+                });
+            }
+        });
+    });
+</script>
+
+@* 
+Usage Examples:
+
+1. Simple delete confirmation with data attributes:
+<a href="/Admin/DeleteCar/123" data-confirm-delete data-item-name="Toyota Camry 2020" class="btn btn-danger btn-sm">
+    <i class="fas fa-trash"></i> Delete
+</a>
+
+2. AJAX delete with data attributes:
+<button data-confirm-delete data-item-name="Honda Civic" data-url="/api/cars/456" data-ajax class="btn btn-danger">
+    Delete
+</button>
+
+3. General confirmation with data attributes:
+<a href="/action" data-confirm="Are you sure you want to proceed?" class="btn btn-warning">
+    Proceed
+</a>
+
+4. Programmatic usage:
+<script>
+    function deleteCar(carId, carName) {
+        confirmDelete(carName, `/Admin/DeleteCar/${carId}`, {
+            useAjax: true,
+            onSuccess: function() {
+                location.reload();
+            }
+        });
+    }
+    
+    function customConfirmation() {
+        ConfirmationModal.show({
+            title: 'Custom Title',
+            question: 'Do you want to continue?',
+            message: 'This will perform a custom action.',
+            confirmText: 'Yes, Continue',
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                // Custom logic here
+                return true;
+            }
+        });
+    }
+</script>
+*@

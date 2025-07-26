@@ -1,0 +1,531 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account - ABC Car Traders";
+    Layout = "_Layout";
+}
+
+<div class="register-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <!-- Register Card -->
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-success text-white text-center py-4">
+                        <div class="register-header">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <h4 class="mb-0">Join ABC Car Traders</h4>
+                            <p class="mb-0 opacity-75">Create your account today</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        
+                        <!-- Error Message -->
+                        @if (!string.IsNullOrEmpty(Model?.ErrorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                @Model.ErrorMessage
+                            </div>
+                        }
+                        
+                        <!-- Benefits Section -->
+                        <div class="benefits-section mb-4">
+                            <h6 class="text-muted mb-3">Why join ABC Car Traders?</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="benefit-item mb-2">
+                                        <i class="fas fa-shopping-cart text-primary me-2"></i>
+                                        <small>Easy ordering</small>
+                                    </div>
+                                    <div class="benefit-item mb-2">
+                                        <i class="fas fa-heart text-danger me-2"></i>
+                                        <small>Save favorites</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="benefit-item mb-2">
+                                        <i class="fas fa-truck text-info me-2"></i>
+                                        <small>Track orders</small>
+                                    </div>
+                                    <div class="benefit-item mb-2">
+                                        <i class="fas fa-tag text-warning me-2"></i>
+                                        <small>Special offers</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                        
+                        <!-- Register Form -->
+                        <form asp-action="Register" asp-controller="Account" method="post" class="register-form" novalidate>
+                            @Html.AntiForgeryToken()
+                            
+                            <!-- Name Fields -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FirstName" class="form-label">
+                                        <i class="fas fa-user me-1"></i>First Name *
+                                    </label>
+                                    <input asp-for="FirstName" class="form-control" 
+                                           placeholder="Enter first name" 
+                                           autocomplete="given-name" autofocus />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LastName" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Last Name *
+                                    </label>
+                                    <input asp-for="LastName" class="form-control" 
+                                           placeholder="Enter last name" 
+                                           autocomplete="family-name" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Field -->
+                            <div class="form-group mb-3">
+                                <label asp-for="Email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email Address *
+                                </label>
+                                <input asp-for="Email" class="form-control" 
+                                       placeholder="Enter your email address" 
+                                       autocomplete="email" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="form-text">We'll never share your email with anyone else.</div>
+                            </div>
+                            
+                            <!-- Phone Number -->
+                            <div class="form-group mb-3">
+                                <label asp-for="PhoneNumber" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Phone Number
+                                </label>
+                                <input asp-for="PhoneNumber" class="form-control" 
+                                       placeholder="Enter your phone number" 
+                                       autocomplete="tel" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- Password Fields -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Password" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Password *
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="Password" class="form-control" 
+                                               placeholder="Create password" 
+                                               autocomplete="new-password" />
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('Password')">
+                                            <i class="fas fa-eye" id="toggleIconPassword"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    
+                                    <!-- Password Strength Indicator -->
+                                    <div class="password-strength mt-2" style="display: none;">
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="strength-text text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="ConfirmPassword" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Confirm Password *
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="ConfirmPassword" class="form-control" 
+                                               placeholder="Confirm password" 
+                                               autocomplete="new-password" />
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('ConfirmPassword')">
+                                            <i class="fas fa-eye" id="toggleIconConfirmPassword"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Address Information -->
+                            <div class="address-section">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Address Information (Optional)
+                                </h6>
+                                
+                                <div class="form-group mb-3">
+                                    <label asp-for="Address" class="form-label">Street Address</label>
+                                    <input asp-for="Address" class="form-control" 
+                                           placeholder="Enter your street address" 
+                                           autocomplete="street-address" />
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label asp-for="City" class="form-label">City</label>
+                                        <input asp-for="City" class="form-control" 
+                                               placeholder="Enter city" 
+                                               autocomplete="address-level2" />
+                                        <span asp-validation-for="City" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="Country" class="form-label">Country</label>
+                                        <select asp-for="Country" class="form-select" autocomplete="country">
+                                            <option value="">Select Country</option>
+                                            <option value="Sri Lanka">Sri Lanka</option>
+                                            <option value="India">India</option>
+                                            <option value="Bangladesh">Bangladesh</option>
+                                            <option value="Pakistan">Pakistan</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <span asp-validation-for="Country" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="form-check mb-3">
+                                <input asp-for="AcceptTerms" class="form-check-input" />
+                                <label asp-for="AcceptTerms" class="form-check-label">
+                                    I agree to the 
+                                    <a href="@Url.Action("Terms", "Home")" target="_blank" class="text-decoration-none">Terms of Service</a> 
+                                    and 
+                                    <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Privacy Policy</a> *
+                                </label>
+                                <span asp-validation-for="AcceptTerms" class="text-danger d-block"></span>
+                            </div>
+                            
+                            <!-- Newsletter Subscription -->
+                            <div class="form-check mb-4">
+                                @* <input asp-for="SubscribeNewsletter" class="form-check-input" /> *@
+                                @* <label asp-for="SubscribeNewsletter" class="form-check-label"> *@
+                                @*     Subscribe to our newsletter for updates and special offers
+                                </label> *@
+                            </div>
+                            
+                            <!-- Register Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-success btn-lg register-btn">
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    <span class="btn-text">Create Account</span>
+                                    <span class="btn-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Creating Account...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Login Link -->
+                        <div class="text-center">
+                            <hr>
+                            <p class="mb-0">
+                                Already have an account? 
+                                <a href="@Url.Action("Login", "Account")" class="text-decoration-none fw-bold">
+                                    Sign In
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Notice -->
+                <div class="text-center mt-4">
+                    <p class="text-muted">
+                        <small>
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Your personal information is secure and will never be shared
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .register-container {
+        min-height: calc(100vh - 76px);
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+    
+    .register-header i {
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .card {
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+        background: linear-gradient(45deg, #28a745, #20c997) !important;
+    }
+    
+    .benefits-section {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #28a745;
+    }
+    
+    .benefit-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40,167,69,.25);
+    }
+    
+    .register-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .register-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    }
+    
+    .register-btn.loading {
+        pointer-events: none;
+    }
+    
+    .password-strength .progress-bar {
+        transition: all 0.3s ease;
+    }
+    
+    .strength-weak { background-color: #dc3545; }
+    .strength-fair { background-color: #ffc107; }
+    .strength-good { background-color: #17a2b8; }
+    .strength-strong { background-color: #28a745; }
+    
+    .form-check-input:checked {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .address-section {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Animation */
+    .card {
+        animation: slideInUp 0.6s ease-out;
+    }
+    
+    @@keyframes slideInUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Mobile responsive */
+    @@media (max-width: 576px) {
+        .register-container {
+            padding: 1rem 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .benefits-section {
+            padding: 0.75rem;
+        }
+        
+        .address-section {
+            padding: 0.75rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.register-form');
+        const submitBtn = document.querySelector('.register-btn');
+        const btnText = document.querySelector('.btn-text');
+        const btnLoading = document.querySelector('.btn-loading');
+        const passwordField = document.getElementById('Password');
+        const strengthIndicator = document.querySelector('.password-strength');
+        
+        // Form submission handling
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('loading');
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+        });
+        
+        // Reset button state if validation fails
+        if (document.querySelector('.text-danger')) {
+            submitBtn.classList.remove('loading');
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+        }
+        
+        // Password strength checker
+        if (passwordField) {
+            passwordField.addEventListener('input', function() {
+                const password = this.value;
+                checkPasswordStrength(password);
+            });
+        }
+        
+        // Real-time email validation
+        const emailField = document.getElementById('Email');
+        if (emailField) {
+            emailField.addEventListener('blur', function() {
+                if (this.value) {
+                    checkEmailAvailability(this.value);
+                }
+            });
+        }
+        
+        // Confirm password matching
+        const confirmPasswordField = document.getElementById('ConfirmPassword');
+        if (confirmPasswordField && passwordField) {
+            confirmPasswordField.addEventListener('input', function() {
+                if (this.value && passwordField.value !== this.value) {
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+    });
+    
+    function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById(`toggleIcon${fieldId}`);
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    function checkPasswordStrength(password) {
+        const strengthIndicator = document.querySelector('.password-strength');
+        const progressBar = strengthIndicator.querySelector('.progress-bar');
+        const strengthText = strengthIndicator.querySelector('.strength-text');
+        
+        if (!password) {
+            strengthIndicator.style.display = 'none';
+            return;
+        }
+        
+        strengthIndicator.style.display = 'block';
+        
+        let score = 0;
+        let feedback = [];
+        
+        // Length check
+        if (password.length >= 8) score++;
+        else feedback.push('at least 8 characters');
+        
+        // Uppercase check
+        if (/[A-Z]/.test(password)) score++;
+        else feedback.push('uppercase letter');
+        
+        // Lowercase check
+        if (/[a-z]/.test(password)) score++;
+        else feedback.push('lowercase letter');
+        
+        // Number check
+        if (/\d/.test(password)) score++;
+        else feedback.push('number');
+        
+        // Special character check
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        else feedback.push('special character');
+        
+        // Update progress bar
+        const percentage = (score / 5) * 100;
+        progressBar.style.width = percentage + '%';
+        
+        // Update strength indication
+        progressBar.className = 'progress-bar';
+        if (score <= 2) {
+            progressBar.classList.add('strength-weak');
+            strengthText.textContent = 'Weak - Add: ' + feedback.slice(0, 2).join(', ');
+            strengthText.className = 'strength-text text-danger';
+        } else if (score === 3) {
+            progressBar.classList.add('strength-fair');
+            strengthText.textContent = 'Fair - Add: ' + feedback.slice(0, 1).join(', ');
+            strengthText.className = 'strength-text text-warning';
+        } else if (score === 4) {
+            progressBar.classList.add('strength-good');
+            strengthText.textContent = 'Good';
+            strengthText.className = 'strength-text text-info';
+        } else {
+            progressBar.classList.add('strength-strong');
+            strengthText.textContent = 'Strong';
+            strengthText.className = 'strength-text text-success';
+        }
+    }
+    
+    async function checkEmailAvailability(email) {
+        try {
+            const response = await fetch(`/Account/CheckEmail?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+            
+            const emailField = document.getElementById('Email');
+            const emailFeedback = emailField.parentNode.querySelector('.email-feedback');
+            
+            // Remove existing feedback
+            if (emailFeedback) {
+                emailFeedback.remove();
+            }
+            
+            if (!data.available) {
+                const feedback = document.createElement('div');
+                feedback.className = 'email-feedback text-danger mt-1';
+                feedback.innerHTML = '<small><i class="fas fa-times me-1"></i>Email already registered</small>';
+                emailField.parentNode.appendChild(feedback);
+            }
+        } catch (error) {
+            console.error('Email check failed:', error);
+        }
+    }
+    
+    // Auto-clear success messages
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert-success');
+        alerts.forEach(alert => {
+            alert.style.transition = 'opacity 0.5s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 5000);
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,369 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarListViewModel
+@{
+    ViewData["Title"] = "Manage Cars";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-primary mb-1">
+            <i class="fas fa-car me-2"></i>Manage Cars
+        </h2>
+        <p class="text-muted mb-0">Manage your vehicle inventory</p>
+    </div>
+    <div>
+        <a href="@Url.Action("AddCar", "Admin")" class="btn btn-success btn-lg">
+            <i class="fas fa-plus me-2"></i>Add New Car
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-uppercase fw-bold mb-1">Total Cars</h6>
+                        <h3 class="mb-0">@Model.TotalCars</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-car fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-uppercase fw-bold mb-1">Available</h6>
+                        <h3 class="mb-0">@Model.AvailableCars</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-uppercase fw-bold mb-1">Low Stock</h6>
+                        <h3 class="mb-0">@Model.Cars.Count(c => c.StockQuantity <= 5)</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-uppercase fw-bold mb-1">Avg Price</h6>
+                        <h3 class="mb-0">LKR @Model.AveragePrice.ToString("N0")</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Search & Filter Cars
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="@Url.Action("ManageCars", "Admin")" id="filterForm">
+            <div class="row g-3">
+                <!-- Search Input -->
+                <div class="col-lg-3">
+                    <label class="form-label fw-bold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search"
+                               value="@Context.Request.Query["search"]"
+                               placeholder="Search by model, brand...">
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="col-lg-2">
+                    <label class="form-label fw-bold">Brand</label>
+                    <select class="form-select" name="brand">
+                        <option value="">All Brands</option>
+                        @foreach (var brand in ViewBag.Brands as List<dynamic> ?? new List<dynamic>())
+                        {
+                            var isBrandSelected = Context.Request.Query["brand"].ToString() == brand.BrandId.ToString();
+                            <option value="@brand.BrandId" selected="@(isBrandSelected ? "selected" : null)">
+                                @brand.BrandName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-lg-2">
+                    <label class="form-label fw-bold">Category</label>
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        @foreach (var category in ViewBag.Categories as List<dynamic> ?? new List<dynamic>())
+                        {
+                            var isCategorySelected = Context.Request.Query["category"].ToString() == category.CategoryId.ToString();
+                            <option value="@category.CategoryId" selected="@(isCategorySelected ? "selected" : null)">
+                                @category.CategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-lg-2">
+                    <label class="form-label fw-bold">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Status</option>
+                        @{
+                            var statusValue = Context.Request.Query["status"].ToString();
+                        }
+                        <option value="available" selected="@(statusValue == "available" ? "selected" : null)">Available</option>
+                        <option value="sold" selected="@(statusValue == "sold" ? "selected" : null)">Sold</option>
+                        <option value="maintenance" selected="@(statusValue == "maintenance" ? "selected" : null)">Maintenance</option>
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div class="col-lg-2">
+                    <label class="form-label fw-bold">Sort By</label>
+                    <select class="form-select" name="sortBy">
+                        @{
+                            var sortValue = Context.Request.Query["sortBy"].ToString();
+                        }
+                        <option value="newest" selected="@(sortValue == "newest" ? "selected" : null)">Newest First</option>
+                        <option value="oldest" selected="@(sortValue == "oldest" ? "selected" : null)">Oldest First</option>
+                        <option value="price_low" selected="@(sortValue == "price_low" ? "selected" : null)">Price: Low to High</option>
+                        <option value="price_high" selected="@(sortValue == "price_high" ? "selected" : null)">Price: High to Low</option>
+                        <option value="alphabetical" selected="@(sortValue == "alphabetical" ? "selected" : null)">Alphabetical</option>
+                    </select>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="col-lg-1">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Clear Filters -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="@Url.Action("ManageCars", "Admin")" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cars Table -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-list me-2"></i>Cars Inventory
+            <span class="badge bg-light text-dark ms-2">@Model.Cars.Count items</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Cars.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Image</th>
+                            <th>Car Details</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var car in Model.Cars)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="car-image-container">
+                                        @if (!string.IsNullOrEmpty(car.ImageUrl))
+                                        {
+                                            <img src="@car.ImageUrl" alt="@car.BrandName @car.Model"
+                                                 class="img-thumbnail car-thumb">
+                                        }
+                                        else
+                                        {
+                                            <div class="placeholder-image d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-car fa-2x text-muted"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="car-details">
+                                        <h6 class="fw-bold mb-1">@car.BrandName @car.Model</h6>
+                                        <div class="text-muted small">
+                                            <span class="me-3">
+                                                <i class="fas fa-calendar me-1"></i>@car.Year
+                                            </span>
+                                            <span class="me-3">
+                                                <i class="fas fa-palette me-1"></i>@car.Color
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-gas-pump me-1"></i>@car.FuelType
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">LKR @car.Price.ToString("N2")</span>
+                                </td>
+                                <td>
+                                    <span class="badge @(car.StockQuantity > 5 ? "bg-success" : car.StockQuantity > 0 ? "bg-warning" : "bg-danger")">
+                                        @car.StockQuantity @(car.StockQuantity == 1 ? "unit" : "units")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (car.IsAvailable && car.StockQuantity > 0)
+                                    {
+                                        <span class="badge bg-success">Available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Not Available</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Details", "Cars", new { id = car.CarId })"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("EditCar", "Admin", new { id = car.CarId })"
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDelete(@car.CarId, '@car.BrandName @car.Model')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No cars found</h5>
+                <p class="text-muted">Try adjusting your search criteria or add new cars to the inventory.</p>
+                <a href="@Url.Action("AddCar", "Admin")" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Add First Car
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Custom CSS for this page -->
+<style>
+    .car-thumb {
+        width: 60px;
+        height: 40px;
+        object-fit: cover;
+    }
+
+    .placeholder-image {
+        width: 60px;
+        height: 40px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+
+    .car-details h6 {
+        color: #495057;
+    }
+
+    .table-responsive {
+        border-radius: 0 0 0.375rem 0.375rem;
+    }
+
+    .btn-group .btn {
+        margin-right: 2px;
+    }
+
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+</style>
+
+<!-- JavaScript for delete confirmation -->
+<script>
+    function confirmDelete(carId, carName) {
+        if (confirm(`Are you sure you want to delete "${carName}"? This action cannot be undone.`)) {
+            // Create form and submit for deletion
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("DeleteCar", "Admin")';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = carId;
+
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '__RequestVerificationToken';
+            token.value = $('input[name="__RequestVerificationToken"]').val();
+
+            form.appendChild(input);
+            form.appendChild(token);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Auto-submit form when filters change
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectElements = document.querySelectorAll('#filterForm select');
+        selectElements.forEach(select => {
+            select.addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
+            });
+        });
+    });
+</script>

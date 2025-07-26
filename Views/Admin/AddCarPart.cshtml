@@ -1,0 +1,574 @@
+﻿@model CarPartViewModel
+@{
+    ViewData["Title"] = "Add New Car Part";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Success/Error Messages -->
+<div id="messageContainer" style="display: none;">
+    <div id="alertMessage" class="alert alert-dismissible fade show" role="alert">
+        <i id="alertIcon" class="me-2"></i>
+        <span id="alertText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<div class="add-car-part-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-plus-circle me-2 text-success"></i>Add New Car Part
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("Dashboard", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("ManageCarParts", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-cogs me-1"></i>Manage Parts
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Add Car Part</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="@Url.Action("ManageCarParts", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Parts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="addCarPartForm">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Part Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Part Name -->
+                            <div class="col-md-8">
+                                <label for="PartName" class="form-label fw-semibold">
+                                    <i class="fas fa-cogs me-1"></i>Part Name *
+                                </label>
+                                <input id="PartName" name="PartName" type="text" class="form-control"
+                                       placeholder="e.g., Brake Pads, Oil Filter, Headlight" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Part Number -->
+                            <div class="col-md-4">
+                                <label for="PartNumber" class="form-label fw-semibold">
+                                    <i class="fas fa-barcode me-1"></i>Part Number *
+                                </label>
+                                <input id="PartNumber" name="PartNumber" type="text" class="form-control"
+                                       placeholder="e.g., BP-001, OF-123" required>
+                                <div class="invalid-feedback"></div>
+                                <small class="text-muted">Must be unique</small>
+                            </div>
+
+                            <!-- Brand Selection -->
+                            <div class="col-md-6">
+                                <label for="BrandId" class="form-label fw-semibold">
+                                    <i class="fas fa-trademark me-1"></i>Brand *
+                                </label>
+                                <select id="BrandId" name="BrandId" class="form-select" required>
+                                    <option value="">Select Brand</option>
+                                    @if (Model?.Brands != null && Model.Brands.Any())
+                                    {
+                                        @foreach (var brand in Model.Brands)
+                                        {
+                                            <option value="@brand.Value">@brand.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Category Selection -->
+                            <div class="col-md-6">
+                                <label for="CategoryId" class="form-label fw-semibold">
+                                    <i class="fas fa-tags me-1"></i>Category *
+                                </label>
+                                <select id="CategoryId" name="CategoryId" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    @if (Model?.Categories != null && Model.Categories.Any())
+                                    {
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            <option value="@category.Value">@category.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-6">
+                                <label for="Price" class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-1"></i>Price (USD) *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input id="Price" name="Price" type="number" class="form-control"
+                                           step="0.01" min="0" placeholder="25.99" required>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Stock Quantity -->
+                            <div class="col-md-6">
+                                <label for="StockQuantity" class="form-label fw-semibold">
+                                    <i class="fas fa-warehouse me-1"></i>Stock Quantity *
+                                </label>
+                                <input id="StockQuantity" name="StockQuantity" type="number" class="form-control"
+                                       min="0" placeholder="50" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Compatibility -->
+                            <div class="col-12">
+                                <label for="Compatibility" class="form-label fw-semibold">
+                                    <i class="fas fa-car me-1"></i>Compatibility
+                                </label>
+                                <textarea id="Compatibility" name="Compatibility" class="form-control" rows="3"
+                                          placeholder="Compatible car models and years (e.g., Toyota Corolla 2018-2023, Honda Civic 2019-2024)"></textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Specify which car models this part is compatible with
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="Description" class="form-label fw-semibold">
+                                    <i class="fas fa-align-left me-1"></i>Description
+                                </label>
+                                <textarea id="Description" name="Description" class="form-control" rows="4"
+                                          placeholder="Detailed description of the part, specifications, features, installation notes, etc."></textarea>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Image URL -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-camera me-2 text-info"></i>Part Image
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="ImageUrl" class="form-label fw-semibold">Image URL</label>
+                            <input id="ImageUrl" name="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://example.com/part-image.jpg">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Enter a valid image URL (JPG, PNG, WebP formats)
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" style="display: none;">
+                            <div class="mb-2">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview()">
+                                <i class="fas fa-times me-1"></i>Clear Preview
+                            </button>
+                        </div>
+
+                        <!-- Preview Button -->
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previewImage()">
+                            <i class="fas fa-eye me-1"></i>Preview Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Part Categories Quick Reference -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-list me-2 text-primary"></i>Part Categories
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="category-list">
+                            <div class="category-item mb-2">
+                                <i class="fas fa-cog text-primary me-2"></i>Engine Parts
+                            </div>
+                            <div class="category-item mb-2">
+                                <i class="fas fa-tools text-success me-2"></i>Brake System
+                            </div>
+                            <div class="category-item mb-2">
+                                <i class="fas fa-car-battery text-warning me-2"></i>Electrical
+                            </div>
+                            <div class="category-item mb-2">
+                                <i class="fas fa-tint text-info me-2"></i>Fluids & Filters
+                            </div>
+                            <div class="category-item mb-2">
+                                <i class="fas fa-car-side text-secondary me-2"></i>Body Parts
+                            </div>
+                            <div class="category-item">
+                                <i class="fas fa-lightbulb text-danger me-2"></i>Lighting
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Availability -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-toggle-on me-2 text-success"></i>Status & Availability
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input id="IsAvailable" name="IsAvailable" class="form-check-input" type="checkbox"
+                                   value="true" checked>
+                            <label class="form-check-label fw-semibold" for="IsAvailable">
+                                Available for Sale
+                            </label>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Part will be visible to customers only when marked as available and stock quantity is greater than 0.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="@Url.Action("ManageCarParts", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-plus me-1"></i>Add Car Part
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .category-item {
+        padding: 0.5rem;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+        font-size: 0.875rem;
+    }
+
+        .category-item:hover {
+            background-color: #e9ecef;
+            cursor: pointer;
+        }
+
+    .form-label.fw-semibold {
+        color: #495057;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .is-valid {
+        border-color: #198754;
+    }
+
+    @@media (max-width: 768px) {
+        .add-car-part-container
+
+    {
+        padding: 0 10px;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+
+    <script>
+        $(document).ready(function() {
+            // Form submission
+            $('#addCarPartForm').on('submit', function(e) {
+                e.preventDefault();
+
+                // Clear previous validation errors
+                clearValidationErrors();
+
+                // Collect form data
+                var formData = collectFormData();
+
+                // Validate form data
+                if (!validateFormData(formData)) {
+                    return;
+                }
+
+                // Show loading state
+                showLoadingState();
+
+                // Get anti-forgery token
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                // Submit via AJAX
+                $.ajax({
+                    url: '@Url.Action("AddCarPart", "Admin")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    success: function(response) {
+                        hideLoadingState();
+
+                        if (response.success) {
+                            showMessage('success', 'Car part added successfully!');
+                            setTimeout(function() {
+                                window.location.href = '@Url.Action("ManageCarParts", "Admin")';
+                            }, 1500);
+                        } else {
+                            showMessage('error', response.message || 'Failed to add car part.');
+                            if (response.errors) {
+                                displayValidationErrors(response.errors);
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        hideLoadingState();
+                        console.error('Error:', error);
+                        showMessage('error', 'An error occurred while adding the car part.');
+                    }
+                });
+            });
+
+            // Image URL preview
+            $('#ImageUrl').on('blur', function() {
+                if ($(this).val()) {
+                    previewImage();
+                }
+            });
+
+            // Auto-generate part number based on category and name
+            $('#CategoryId').on('change', generatePartNumber);
+            $('#PartName').on('blur', generatePartNumber);
+        });
+
+        function collectFormData() {
+            return {
+                BrandId: parseInt($('#BrandId').val()) || 0,
+                CategoryId: parseInt($('#CategoryId').val()) || 0,
+                PartName: $('#PartName').val().trim(),
+                PartNumber: $('#PartNumber').val().trim(),
+                Price: parseFloat($('#Price').val()) || 0,
+                StockQuantity: parseInt($('#StockQuantity').val()) || 0,
+                Compatibility: $('#Compatibility').val().trim(),
+                Description: $('#Description').val().trim(),
+                ImageUrl: $('#ImageUrl').val().trim(),
+                IsAvailable: $('#IsAvailable').is(':checked')
+            };
+        }
+
+        function validateFormData(data) {
+            var isValid = true;
+
+            // Required field validations
+            if (!data.BrandId) {
+                showFieldError('BrandId', 'Please select a brand');
+                isValid = false;
+            }
+
+            if (!data.CategoryId) {
+                showFieldError('CategoryId', 'Please select a category');
+                isValid = false;
+            }
+
+            if (!data.PartName) {
+                showFieldError('PartName', 'Part name is required');
+                isValid = false;
+            }
+
+            if (!data.PartNumber) {
+                showFieldError('PartNumber', 'Part number is required');
+                isValid = false;
+            }
+
+            if (!data.Price || data.Price <= 0) {
+                showFieldError('Price', 'Please enter a valid price');
+                isValid = false;
+            }
+
+            if (data.StockQuantity === undefined || data.StockQuantity < 0) {
+                showFieldError('StockQuantity', 'Please enter a valid stock quantity');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(fieldId, message) {
+            var field = $('#' + fieldId);
+            field.addClass('is-invalid');
+            field.siblings('.invalid-feedback').text(message);
+        }
+
+        function clearValidationErrors() {
+            $('.form-control, .form-select').removeClass('is-invalid is-valid');
+            $('.invalid-feedback').text('');
+        }
+
+        function displayValidationErrors(errors) {
+            errors.forEach(function(error) {
+                showMessage('warning', error);
+            });
+        }
+
+        function showLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Adding...');
+        }
+
+        function hideLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-plus me-1"></i>Add Car Part');
+        }
+
+        function showMessage(type, message) {
+            var alertClass = 'alert-success';
+            var iconClass = 'fas fa-check-circle';
+
+            if (type === 'error') {
+                alertClass = 'alert-danger';
+                iconClass = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                alertClass = 'alert-warning';
+                iconClass = 'fas fa-exclamation-triangle';
+            }
+
+            $('#alertMessage').removeClass('alert-success alert-danger alert-warning')
+                              .addClass(alertClass);
+            $('#alertIcon').removeClass().addClass(iconClass);
+            $('#alertText').text(message);
+            $('#messageContainer').show();
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(function() {
+                    $('#messageContainer').fadeOut();
+                }, 3000);
+            }
+        }
+
+        function previewImage() {
+            var imageUrl = $('#ImageUrl').val().trim();
+
+            if (!imageUrl) {
+                clearImagePreview();
+                return;
+            }
+
+            // Simple URL validation
+            if (!isValidImageUrl(imageUrl)) {
+                showFieldError('ImageUrl', 'Please enter a valid image URL');
+                return;
+            }
+
+            $('#previewImg').attr('src', imageUrl);
+            $('#imagePreview').show();
+
+            // Handle image load error
+            $('#previewImg').on('error', function() {
+                showFieldError('ImageUrl', 'Unable to load image from this URL');
+                clearImagePreview();
+            });
+        }
+
+        function clearImagePreview() {
+            $('#imagePreview').hide();
+            $('#previewImg').attr('src', '');
+            $('#ImageUrl').removeClass('is-invalid');
+        }
+
+        function isValidImageUrl(url) {
+            try {
+                new URL(url);
+                return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
+            } catch {
+                return false;
+            }
+        }
+
+        function generatePartNumber() {
+            const categorySelect = $('#CategoryId');
+            const partNameInput = $('#PartName');
+            const partNumberInput = $('#PartNumber');
+
+            if (categorySelect.val() && partNameInput.val() && !partNumberInput.val()) {
+                const categoryText = categorySelect.find('option:selected').text();
+                const categoryCode = categoryText.substring(0, 2).toUpperCase();
+                const nameCode = partNameInput.val().replace(/\s+/g, '').substring(0, 3).toUpperCase();
+                const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+                partNumberInput.val(`${categoryCode}-${nameCode}-${randomNum}`);
+            }
+        }
+
+        // Quick category selection
+        $('.category-item').on('click', function() {
+            const categorySelect = $('#CategoryId');
+            const categoryText = $(this).text().trim();
+
+            // Try to match with existing options
+            categorySelect.find('option').each(function() {
+                if ($(this).text().toLowerCase().includes(categoryText.toLowerCase())) {
+                    categorySelect.val($(this).val());
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,298 @@
+﻿@model ABCCarTraders.Models.ViewModels.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+    Layout = "_Layout";
+}
+
+<div class="error-container py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                
+                <!-- Error Icon and Title -->
+                <div class="error-icon mb-4">
+                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                </div>
+                
+                <h1 class="display-4 fw-bold text-danger mb-3">Oops! Something went wrong</h1>
+                <p class="lead text-muted mb-4">
+                    We apologize for the inconvenience. An unexpected error has occurred.
+                </p>
+                
+                <!-- Error Details Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">
+                            <i class="fas fa-info-circle me-2"></i>Error Information
+                        </h5>
+                        
+                        @if (!string.IsNullOrEmpty(Model?.RequestId))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-4 text-md-end">
+                                    <strong>Request ID:</strong>
+                                </div>
+                                <div class="col-md-8 text-md-start">
+                                    <code class="text-muted">@Model.RequestId</code>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-md-end">
+                                <strong>Time:</strong>
+                            </div>
+                            <div class="col-md-8 text-md-start">
+                                @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-md-end">
+                                <strong>Status:</strong>
+                            </div>
+                            <div class="col-md-8 text-md-start">
+                                <span class="badge bg-danger">Error Occurred</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- What you can do section -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary">
+                                    <i class="fas fa-redo me-2"></i>Try Again
+                                </h6>
+                                <p class="card-text">Sometimes a simple refresh can resolve the issue.</p>
+                                <button onclick="location.reload()" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh Page
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="card-title text-success">
+                                    <i class="fas fa-home me-2"></i>Go Home
+                                </h6>
+                                <p class="card-text">Return to our homepage and continue browsing.</p>
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-success btn-sm">
+                                    <i class="fas fa-home me-1"></i>Go to Homepage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Navigation -->
+                <div class="quick-nav mb-4">
+                    <h6 class="fw-bold mb-3">Quick Navigation</h6>
+                    <div class="row">
+                        <div class="col-6 col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "Cars")" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-car me-1"></i>Cars
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "CarParts")" class="btn btn-outline-success btn-sm w-100">
+                                <i class="fas fa-cogs me-1"></i>Parts
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <a href="@Url.Action("About", "Home")" class="btn btn-outline-info btn-sm w-100">
+                                <i class="fas fa-info-circle me-1"></i>About
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="fas fa-envelope me-1"></i>Contact
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Support -->
+                <div class="card border-warning mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title text-warning">
+                            <i class="fas fa-life-ring me-2"></i>Need Help?
+                        </h6>
+                        <p class="card-text mb-3">
+                            If the problem persists, please contact our support team. We're here to help!
+                        </p>
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <a href="@Url.Action("Contact", "Home")" class="btn btn-warning btn-sm w-100">
+                                    <i class="fas fa-envelope me-1"></i>Contact Us
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <a href="tel:+94112345678" class="btn btn-outline-warning btn-sm w-100">
+                                    <i class="fas fa-phone me-1"></i>Call Support
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <a href="mailto:support@abccartraders.com" class="btn btn-outline-warning btn-sm w-100">
+                                    <i class="fas fa-at me-1"></i>Email Support
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Technical Information (for development) -->
+                @if (Model?.ShowRequestId == true)
+                {
+                    <div class="accordion mb-4" id="technicalInfoAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="technicalInfoHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#technicalInfoCollapse">
+                                    <i class="fas fa-code me-2"></i>Technical Information
+                                </button>
+                            </h2>
+                            <div id="technicalInfoCollapse" class="accordion-collapse collapse" data-bs-parent="#technicalInfoAccordion">
+                                <div class="accordion-body text-start">
+                                    <small class="text-muted">
+                                        <strong>Request ID:</strong> @Model.RequestId<br>
+                                        <strong>Timestamp:</strong> @DateTime.Now<br>
+                                        <strong>User Agent:</strong> @Context.Request.Headers["User-Agent"]<br>
+                                        <strong>URL:</strong> @Context.Request.Path
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Back Button -->
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Error Page Styles -->
+<style>
+    .error-container {
+        min-height: 60vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .error-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .quick-nav .btn {
+        font-size: 0.875rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .error-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        
+        .display-4 {
+            font-size: 2rem;
+        }
+        
+        .error-icon i {
+            font-size: 3rem !important;
+        }
+    }
+</style>
+
+<!-- Error Page JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-report error (in production, you might want to send this to your logging service)
+        console.log('Error occurred at:', new Date().toISOString());
+        
+        // Add click tracking for error page actions
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const action = this.textContent.trim();
+                console.log('Error page action:', action);
+                
+                // You could send this to your analytics service
+                // gtag('event', 'error_page_action', { action: action });
+            });
+        });
+        
+        // Add automatic refresh suggestion after 30 seconds
+        setTimeout(function() {
+            const refreshSuggestion = document.createElement('div');
+            refreshSuggestion.className = 'alert alert-info alert-dismissible fade show mt-3';
+            refreshSuggestion.innerHTML = `
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Suggestion:</strong> You can try refreshing the page again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.error-container .container');
+            if (container) {
+                container.appendChild(refreshSuggestion);
+            }
+        }, 30000);
+        
+        // Check if user came from internal navigation
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+            const backButton = document.querySelector('button[onclick="history.back()"]');
+            if (backButton) {
+                backButton.style.display = 'inline-block';
+            }
+        }
+    });
+    
+    // Function to copy error details to clipboard
+    function copyErrorDetails() {
+        const errorDetails = `
+Error occurred at ABC Car Traders
+Time: ${new Date().toISOString()}
+Request ID: @Model?.RequestId
+URL: ${window.location.href}
+User Agent: ${navigator.userAgent}
+        `.trim();
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(errorDetails).then(() => {
+                alert('Error details copied to clipboard');
+            });
+        }
+    }
+</script>

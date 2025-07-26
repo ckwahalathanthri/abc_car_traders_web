@@ -1,0 +1,293 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var isAuthenticated = Context.Session.GetString("UserId") != null;
+    var userType = Context.Session.GetString("UserType");
+    var userName = Context.Session.GetString("UserName");
+    var cartCount = Context.Session.GetString("CartCount") ?? "0";
+    var isAdmin = userType == "Admin";
+    var isCustomer = userType == "Customer";
+}
+
+<ul class="navbar-nav">
+    @if (isAuthenticated)
+    {
+        <!-- Cart Icon (Customers only) -->
+        @if (isCustomer)
+        {
+            <li class="nav-item">
+                <a class="nav-link position-relative" href="@Url.Action("Cart", "Order")" title="Shopping Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    @if (int.Parse(cartCount) > 0)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                            @cartCount
+                        </span>
+                    }
+                </a>
+            </li>
+        }
+        
+        <!-- User Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-avatar me-2">
+                    @if (isAdmin)
+                    {
+                        <i class="fas fa-user-shield"></i>
+                    }
+                    else
+                    {
+                        <i class="fas fa-user"></i>
+                    }
+                </div>
+                <span class="d-none d-md-inline">@userName</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <!-- User Info Header -->
+                <li class="dropdown-header">
+                    <div class="d-flex align-items-center">
+                        @if (isAdmin)
+                        {
+                            <i class="fas fa-user-shield me-2 text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-user me-2 text-primary"></i>
+                        }
+                        <div>
+                            <strong>@userName</strong>
+                            <br><small class="text-muted">@userType</small>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                
+                <!-- Admin Menu Items -->
+                @if (isAdmin)
+                {
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Dashboard", "Admin")">
+                            <i class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("ManageCars", "Admin")">
+                            <i class="fas fa-car me-2 text-success"></i>Manage Cars
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("ManageCarParts", "Admin")">
+                            <i class="fas fa-cogs me-2 text-info"></i>Manage Parts
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("ManageOrders", "Admin")">
+                            <i class="fas fa-shopping-cart me-2 text-warning"></i>Manage Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("ManageCustomers", "Admin")">
+                            <i class="fas fa-users me-2 text-secondary"></i>Manage Customers
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                }
+                
+                <!-- Customer Menu Items -->
+                @if (isCustomer)
+                {
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Dashboard", "Customer")">
+                            <i class="fas fa-tachometer-alt me-2 text-primary"></i>My Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("MyOrders", "Customer")">
+                            <i class="fas fa-box me-2 text-success"></i>My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Cart", "Order")">
+                            <i class="fas fa-shopping-cart me-2 text-warning"></i>Shopping Cart
+                            @if (int.Parse(cartCount) > 0)
+                            {
+                                <span class="badge bg-warning text-dark ms-1">@cartCount</span>
+                            }
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Wishlist", "Customer")">
+                            <i class="fas fa-heart me-2 text-danger"></i>My Wishlist
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                }
+                
+                <!-- Common Menu Items -->
+                <li>
+                    <a class="dropdown-item" href="@Url.Action("Profile", isAdmin ? "Admin" : "Customer")">
+                        <i class="fas fa-user-edit me-2 text-info"></i>My Profile
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="@Url.Action("ChangePassword", "Account")">
+                        <i class="fas fa-key me-2 text-secondary"></i>Change Password
+                    </a>
+                </li>
+                
+                <!-- Admin Only - View Website -->
+                @if (isAdmin)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Index", "Home")" target="_blank">
+                            <i class="fas fa-external-link-alt me-2 text-info"></i>View Website
+                        </a>
+                    </li>
+                }
+                
+                <!-- Logout -->
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline w-100">
+                        <button type="submit" class="dropdown-item text-danger w-100 text-start border-0 bg-transparent">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <!-- Not Authenticated - Show Login/Register -->
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Login", "Account")">
+                <i class="fas fa-sign-in-alt me-1"></i>
+                <span class="d-none d-md-inline">Login</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Register", "Account")">
+                <i class="fas fa-user-plus me-1"></i>
+                <span class="d-none d-md-inline">Register</span>
+            </a>
+        </li>
+    }
+</ul>
+
+<!-- Additional styles for better UX -->
+<style>
+    .user-avatar {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .dropdown-menu {
+        min-width: 250px;
+    }
+    
+    .dropdown-header {
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+    }
+    
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(2px);
+    }
+    
+    .dropdown-item i {
+        width: 20px;
+        text-align: center;
+    }
+    
+    .navbar-nav .nav-link {
+        transition: all 0.2s ease;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        transform: translateY(-1px);
+    }
+    
+    .badge {
+        font-size: 0.7em;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @@media (max-width: 768px) {
+        .dropdown-menu {
+            min-width: 200px;
+        }
+        
+        .dropdown-header {
+            padding: 0.5rem 1rem;
+        }
+    }
+</style>
+
+<!-- JavaScript for enhanced functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+                if (bsDropdown) {
+                    bsDropdown.hide();
+                }
+            }
+        });
+        
+        // Add loading state to logout button
+        const logoutForm = document.querySelector('form[action*="Logout"]');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', function(e) {
+                const button = this.querySelector('button');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging out...';
+                button.disabled = true;
+            });
+        }
+        
+        // Update cart count periodically for customers
+        @if (isCustomer)
+        {
+            <text>
+            function updateCartCount() {
+                fetch('@Url.Action("GetCartCount", "Order")')
+                    .then(response => response.json())
+                    .then(data => {
+                        const cartBadges = document.querySelectorAll('.badge:contains("@cartCount")');
+                        cartBadges.forEach(badge => {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        });
+                    })
+                    .catch(error => console.log('Cart update failed:', error));
+            }
+            
+            // Update every 30 seconds
+            setInterval(updateCartCount, 30000);
+            </text>
+        }
+    });
+</script>

@@ -1,0 +1,790 @@
+﻿@model ABCCarTraders.Models.ViewModels.CarViewModel
+@{
+    ViewData["Title"] = "Edit Car";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Success/Error Messages -->
+<div id="messageContainer" style="display: none;">
+    <div id="alertMessage" class="alert alert-dismissible fade show" role="alert">
+        <i id="alertIcon" class="me-2"></i>
+        <span id="alertText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<div class="edit-car-container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark fw-bold">
+                        <i class="fas fa-edit me-2 text-primary"></i>Edit Car
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("Dashboard", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("ManageCars", "Admin")" class="text-decoration-none">
+                                    <i class="fas fa-car me-1"></i>Manage Cars
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Edit @Model.BrandName @Model.Model</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Action("Details", "Cars", new { id = Model.CarId })"
+                       class="btn btn-outline-info" target="_blank">
+                        <i class="fas fa-external-link-alt me-1"></i>View Live
+                    </a>
+                    <a href="@Url.Action("ManageCars", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Cars
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Car Info Alert -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                    <strong>Car ID:</strong> #@Model.CarId
+                    | <strong>Current Stock:</strong> @Model.StockQuantity units
+                    | <strong>Status:</strong> @(Model.IsAvailable ? "Available" : "Not Available")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="editCarForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="CarId" name="CarId" value="@Model.CarId">
+
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Car Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Brand Selection -->
+                            <div class="col-md-6">
+                                <label for="BrandId" class="form-label fw-semibold">
+                                    <i class="fas fa-trademark me-1"></i>Brand *
+                                </label>
+                                <select id="BrandId" name="BrandId" class="form-select" required>
+                                    <option value="">Select Brand</option>
+                                    @if (Model?.Brands != null && Model.Brands.Any())
+                                    {
+                                        @foreach (var brand in Model.Brands)
+                                        {
+                                            @if (Model.BrandId.ToString() == brand.Value)
+                                            {
+                                                <option value="@brand.Value" selected="selected">@brand.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@brand.Value">@brand.Text</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Category Selection -->
+                            <div class="col-md-6">
+                                <label for="CategoryId" class="form-label fw-semibold">
+                                    <i class="fas fa-tags me-1"></i>Category *
+                                </label>
+                                <select id="CategoryId" name="CategoryId" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    @if (Model?.Categories != null && Model.Categories.Any())
+                                    {
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            @if (Model.CategoryId.ToString() == category.Value)
+                                            {
+                                                <option value="@category.Value" selected="selected">@category.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@category.Value">@category.Text</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Model -->
+                            <div class="col-md-8">
+                                <label for="Model" class="form-label fw-semibold">
+                                    <i class="fas fa-car me-1"></i>Model *
+                                </label>
+                                <input id="Model" name="Model" type="text" class="form-control"
+                                       value="@Model.Model" placeholder="e.g., Corolla, Civic, 3 Series" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Year -->
+                            <div class="col-md-4">
+                                <label for="Year" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-1"></i>Year *
+                                </label>
+                                <input id="Year" name="Year" type="number" class="form-control"
+                                       value="@Model.Year" min="1990" max="@DateTime.Now.Year" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Color -->
+                            <div class="col-md-6">
+                                <label for="Color" class="form-label fw-semibold">
+                                    <i class="fas fa-palette me-1"></i>Color
+                                </label>
+                                <select id="Color" name="Color" class="form-select">
+                                    <option value="">Select Color</option>
+                                    @{
+                                        string[] colors = { "White", "Black", "Silver", "Gray", "Red", "Blue", "Green", "Yellow", "Brown", "Gold", "Other" };
+                                    }
+                                    @foreach (var color in colors)
+                                    {
+                                        @if (Model.Color == color)
+                                        {
+                                            <option value="@color" selected="selected">@color</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@color">@color</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-6">
+                                <label for="Price" class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-1"></i>Price (USD) *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input id="Price" name="Price" type="number" class="form-control"
+                                           value="@Model.Price" step="0.01" min="0" required>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Mileage -->
+                            <div class="col-md-4">
+                                <label for="Mileage" class="form-label fw-semibold">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Mileage
+                                </label>
+                                <div class="input-group">
+                                    <input id="Mileage" name="Mileage" type="number" class="form-control"
+                                           value="@Model.Mileage" min="0">
+                                    <span class="input-group-text">miles</span>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Fuel Type -->
+                            <div class="col-md-4">
+                                <label for="FuelType" class="form-label fw-semibold">
+                                    <i class="fas fa-gas-pump me-1"></i>Fuel Type *
+                                </label>
+                                <select id="FuelType" name="FuelType" class="form-select" required>
+                                    <option value="">Select Fuel Type</option>
+                                    @{
+                                        var fuelTypes = new Dictionary<int, string> { { 0, "Petrol" }, { 1, "Diesel" }, { 2, "Electric" }, { 3, "Hybrid" } };
+                                    }
+                                    @foreach (var fuelType in fuelTypes)
+                                    {
+                                        @if ((int)Model.FuelType == fuelType.Key)
+                                        {
+                                            <option value="@fuelType.Key" selected="selected">@fuelType.Value</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@fuelType.Key">@fuelType.Value</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Transmission -->
+                            <div class="col-md-4">
+                                <label for="Transmission" class="form-label fw-semibold">
+                                    <i class="fas fa-cogs me-1"></i>Transmission *
+                                </label>
+                                <select id="Transmission" name="Transmission" class="form-select" required>
+                                    <option value="">Select Transmission</option>
+                                    @{
+                                        var transmissions = new Dictionary<int, string> { { 0, "Manual" }, { 1, "Automatic" } };
+                                    }
+                                    @foreach (var transmission in transmissions)
+                                    {
+                                        @if ((int)Model.Transmission == transmission.Key)
+                                        {
+                                            <option value="@transmission.Key" selected="selected">@transmission.Value</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@transmission.Key">@transmission.Value</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Engine Capacity -->
+                            <div class="col-md-6">
+                                <label for="EngineCapacity" class="form-label fw-semibold">
+                                    <i class="fas fa-engine me-1"></i>Engine Capacity
+                                </label>
+                                <div class="input-group">
+                                    <input id="EngineCapacity" name="EngineCapacity" class="form-control"
+                                           value="@Model.EngineCapacity" placeholder="2.0L, 1800cc">
+                                    <span class="input-group-text">L/cc</span>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Stock Quantity -->
+                            <div class="col-md-6">
+                                <label for="StockQuantity" class="form-label fw-semibold">
+                                    <i class="fas fa-warehouse me-1"></i>Stock Quantity *
+                                </label>
+                                <input id="StockQuantity" name="StockQuantity" type="number" class="form-control"
+                                       value="@Model.StockQuantity" min="0" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="Description" class="form-label fw-semibold">
+                                    <i class="fas fa-align-left me-1"></i>Description
+                                </label>
+                                <textarea id="Description" name="Description" class="form-control" rows="4"
+                                          placeholder="Detailed description of the car, condition, history, etc.">@Model.Description</textarea>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="col-12">
+                                <label for="Features" class="form-label fw-semibold">
+                                    <i class="fas fa-star me-1"></i>Features
+                                </label>
+                                <textarea id="Features" name="Features" class="form-control" rows="3"
+                                          placeholder="Air conditioning, GPS, Leather seats, Sunroof, etc. (separate by commas)">@Model.Features</textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Add features or use the quick add buttons below
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Air Conditioning')">AC</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('GPS Navigation')">GPS</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Leather Seats')">Leather</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Sunroof')">Sunroof</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Bluetooth')">Bluetooth</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="addFeature('Backup Camera')">Backup Camera</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Current Image -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-camera me-2 text-info"></i>Car Image
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="current-image mb-3">
+                                <img src="@Model.ImageUrl" alt="@Model.Model" class="img-fluid rounded mb-2" style="max-height: 200px; width: 100%; object-fit: cover;">
+                                <small class="text-muted d-block">Current Image</small>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="ImageUrl" class="form-label fw-semibold">Image URL</label>
+                            <input id="ImageUrl" name="ImageUrl" type="url" class="form-control"
+                                   value="@Model.ImageUrl" placeholder="https://example.com/car-image.jpg">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Enter a valid image URL (JPG, PNG, WebP formats)
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" style="display: none;">
+                            <div class="mb-2">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview()">
+                                <i class="fas fa-times me-1"></i>Clear Preview
+                            </button>
+                        </div>
+
+                        <!-- Preview Button -->
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previewImage()">
+                            <i class="fas fa-eye me-1"></i>Preview New Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status & Availability -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-toggle-on me-2 text-success"></i>Status & Availability
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            @if (Model.IsAvailable)
+                            {
+                                <input id="IsAvailable" name="IsAvailable" class="form-check-input" type="checkbox"
+                                       value="true" checked="checked">
+                            }
+                            else
+                            {
+                                <input id="IsAvailable" name="IsAvailable" class="form-check-input" type="checkbox"
+                                       value="true">
+                            }
+                            <label class="form-check-label fw-semibold" for="IsAvailable">
+                                Available for Sale
+                            </label>
+                        </div>
+
+                        <div class="status-info">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Current Status:</span>
+                                <span class="badge bg-@(Model.IsAvailable && Model.StockQuantity > 0 ? "success" : "secondary")">
+                                    @(Model.IsAvailable && Model.StockQuantity > 0 ? "Available" : "Not Available")
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Stock Level:</span>
+                                <span class="badge bg-@(Model.StockQuantity > 0 ? "success" : "danger")">
+                                    @Model.StockQuantity units
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Car visibility to customers depends on availability status and stock quantity.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetForm()">
+                                <i class="fas fa-undo me-1"></i>Reset Changes
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDeleteCar()">
+                                <i class="fas fa-trash me-1"></i>Delete Car
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="@Url.Action("ManageCars", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-save me-1"></i>Update Car
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .card {
+        border-radius: 12px;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    .form-label.fw-semibold {
+        color: #495057;
+    }
+
+    .status-info {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .is-valid {
+        border-color: #198754;
+    }
+
+    @@media (max-width: 768px) {
+        .edit-car-container
+
+    {
+        padding: 0 10px;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+
+    <script>
+        // Store original form data for reset functionality
+        var originalFormData;
+
+        $(document).ready(function() {
+            // Store original form data
+            originalFormData = collectFormData();
+
+            // Form submission
+            $('#editCarForm').on('submit', function(e) {
+                e.preventDefault();
+
+                // Clear previous validation errors
+                clearValidationErrors();
+
+                // Collect form data
+                var formData = collectFormData();
+
+                // Validate form data
+                if (!validateFormData(formData)) {
+                    return;
+                }
+
+                // Show loading state
+                showLoadingState();
+
+                // Get anti-forgery token
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                // Submit via AJAX
+                $.ajax({
+                    url: '@Url.Action("EditCar", "Admin")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    success: function(response) {
+                        hideLoadingState();
+
+                        if (response.success) {
+                            showMessage('success', 'Car updated successfully!');
+                            // Update original form data
+                            originalFormData = collectFormData();
+                        } else {
+                            showMessage('error', response.message || 'Failed to update car.');
+                            if (response.errors) {
+                                displayValidationErrors(response.errors);
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        hideLoadingState();
+                        console.error('Error:', error);
+                        showMessage('error', 'An error occurred while updating the car.');
+                    }
+                });
+            });
+
+            // Image URL preview
+            $('#ImageUrl').on('blur', function() {
+                if ($(this).val() && $(this).val() !== '@Model.ImageUrl') {
+                    previewImage();
+                }
+            });
+        });
+
+        function collectFormData() {
+            return {
+                CarId: parseInt($('#CarId').val()),
+                BrandId: parseInt($('#BrandId').val()) || 0,
+                CategoryId: parseInt($('#CategoryId').val()) || 0,
+                Model: $('#Model').val().trim(),
+                Year: parseInt($('#Year').val()) || 0,
+                Color: $('#Color').val(),
+                Price: parseFloat($('#Price').val()) || 0,
+                Mileage: $('#Mileage').val() ? parseInt($('#Mileage').val()) : null,
+                FuelType: parseInt($('#FuelType').val()),
+                Transmission: parseInt($('#Transmission').val()),
+                EngineCapacity: $('#EngineCapacity').val().trim(),
+                Description: $('#Description').val().trim(),
+                Features: $('#Features').val().trim(),
+                ImageUrl: $('#ImageUrl').val().trim(),
+                StockQuantity: parseInt($('#StockQuantity').val()) || 1,
+                IsAvailable: $('#IsAvailable').is(':checked')
+            };
+        }
+
+        function validateFormData(data) {
+            var isValid = true;
+
+            // Required field validations
+            if (!data.BrandId) {
+                showFieldError('BrandId', 'Please select a brand');
+                isValid = false;
+            }
+
+            if (!data.CategoryId) {
+                showFieldError('CategoryId', 'Please select a category');
+                isValid = false;
+            }
+
+            if (!data.Model) {
+                showFieldError('Model', 'Model is required');
+                isValid = false;
+            }
+
+            if (!data.Year || data.Year < 1990 || data.Year > new Date().getFullYear()) {
+                showFieldError('Year', 'Please enter a valid year');
+                isValid = false;
+            }
+
+            if (!data.Price || data.Price <= 0) {
+                showFieldError('Price', 'Please enter a valid price');
+                isValid = false;
+            }
+
+            if (data.FuelType === undefined || data.FuelType === null || data.FuelType === '') {
+                showFieldError('FuelType', 'Please select a fuel type');
+                isValid = false;
+            }
+
+            if (data.Transmission === undefined || data.Transmission === null || data.Transmission === '') {
+                showFieldError('Transmission', 'Please select a transmission type');
+                isValid = false;
+            }
+
+            if (!data.StockQuantity || data.StockQuantity < 0) {
+                showFieldError('StockQuantity', 'Please enter a valid stock quantity');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(fieldId, message) {
+            var field = $('#' + fieldId);
+            field.addClass('is-invalid');
+            field.siblings('.invalid-feedback').text(message);
+        }
+
+        function clearValidationErrors() {
+            $('.form-control, .form-select').removeClass('is-invalid is-valid');
+            $('.invalid-feedback').text('');
+        }
+
+        function displayValidationErrors(errors) {
+            errors.forEach(function(error) {
+                showMessage('warning', error);
+            });
+        }
+
+        function showLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Updating...');
+        }
+
+        function hideLoadingState() {
+            var submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-save me-1"></i>Update Car');
+        }
+
+        function showMessage(type, message) {
+            var alertClass = 'alert-success';
+            var iconClass = 'fas fa-check-circle';
+
+            if (type === 'error') {
+                alertClass = 'alert-danger';
+                iconClass = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                alertClass = 'alert-warning';
+                iconClass = 'fas fa-exclamation-triangle';
+            }
+
+            $('#alertMessage').removeClass('alert-success alert-danger alert-warning')
+                              .addClass(alertClass);
+            $('#alertIcon').removeClass().addClass(iconClass);
+            $('#alertText').text(message);
+            $('#messageContainer').show();
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(function() {
+                    $('#messageContainer').fadeOut();
+                }, 3000);
+            }
+        }
+
+        function addFeature(feature) {
+            var featuresTextarea = $('#Features');
+            var currentFeatures = featuresTextarea.val();
+
+            if (currentFeatures.includes(feature)) {
+                return; // Feature already exists
+            }
+
+            if (currentFeatures.trim() === '') {
+                featuresTextarea.val(feature);
+            } else {
+                featuresTextarea.val(currentFeatures + ', ' + feature);
+            }
+        }
+
+        function previewImage() {
+            var imageUrl = $('#ImageUrl').val().trim();
+
+            if (!imageUrl) {
+                clearImagePreview();
+                return;
+            }
+
+            // Simple URL validation
+            if (!isValidImageUrl(imageUrl)) {
+                showFieldError('ImageUrl', 'Please enter a valid image URL');
+                return;
+            }
+
+            $('#previewImg').attr('src', imageUrl);
+            $('#imagePreview').show();
+
+            // Handle image load error
+            $('#previewImg').on('error', function() {
+                showFieldError('ImageUrl', 'Unable to load image from this URL');
+                clearImagePreview();
+            });
+        }
+
+        function clearImagePreview() {
+            $('#imagePreview').hide();
+            $('#previewImg').attr('src', '');
+            $('#ImageUrl').removeClass('is-invalid');
+        }
+
+        function isValidImageUrl(url) {
+            try {
+                new URL(url);
+                return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
+            } catch {
+                return false;
+            }
+        }
+
+        function resetForm() {
+            if (confirm('This will reset all changes back to the original values. Continue?')) {
+                // Reset all form fields to original values
+                $('#BrandId').val(originalFormData.BrandId);
+                $('#CategoryId').val(originalFormData.CategoryId);
+                $('#Model').val(originalFormData.Model);
+                $('#Year').val(originalFormData.Year);
+                $('#Color').val(originalFormData.Color);
+                $('#Price').val(originalFormData.Price);
+                $('#Mileage').val(originalFormData.Mileage);
+                $('#FuelType').val(originalFormData.FuelType);
+                $('#Transmission').val(originalFormData.Transmission);
+                $('#EngineCapacity').val(originalFormData.EngineCapacity);
+                $('#Description').val(originalFormData.Description);
+                $('#Features').val(originalFormData.Features);
+                $('#ImageUrl').val(originalFormData.ImageUrl);
+                $('#StockQuantity').val(originalFormData.StockQuantity);
+                $('#IsAvailable').prop('checked', originalFormData.IsAvailable);
+
+                clearValidationErrors();
+                clearImagePreview();
+                showMessage('info', 'Form reset to original values.');
+            }
+        }
+
+        function confirmDeleteCar() {
+            if (confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
+                deleteCar();
+            }
+        }
+
+        function deleteCar() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '@Url.Action("DeleteCar", "Admin")',
+                type: 'POST',
+                data: {
+                    id: @Model.CarId,
+                    __RequestVerificationToken: token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showMessage('success', 'Car deleted successfully!');
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("ManageCars", "Admin")';
+                        }, 1500);
+                    } else {
+                        showMessage('error', response.message || 'Failed to delete car.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    showMessage('error', 'An error occurred while deleting the car.');
+                }
+            });
+        }
+    </script>
+}

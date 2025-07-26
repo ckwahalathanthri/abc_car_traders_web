@@ -1,0 +1,432 @@
+﻿@using ABCCarTraders.Controllers
+@model SearchResultsViewModel
+
+@{
+    ViewData["Title"] = $"Search Results for '{Model.SearchTerm}' - ABC Car Traders";
+}
+
+<!-- Page Header -->
+<section class="page-header bg-primary text-white py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="h3 mb-2">Search Results</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 bg-transparent">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Search Results</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Info Section -->
+<section class="search-info py-4 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="mb-2">Search Results for: <span class="text-primary">"@Model.SearchTerm"</span></h4>
+                <p class="text-muted mb-0">
+                    Found <strong>@Model.TotalResults</strong> result@(Model.TotalResults != 1 ? "s" : "") 
+                    @if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "all")
+                    {
+                        <span>in <strong>@Model.Category.ToUpper()</strong></span>
+                    }
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <!-- Refine Search -->
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#refineSearch" aria-expanded="false">
+                    <i class="fas fa-filter me-2"></i>Refine Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Refine Search Form -->
+        <div class="collapse mt-3" id="refineSearch">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Search" method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="searchTerm" class="form-label">Search Term</label>
+                            <input type="text" name="searchTerm" id="searchTerm" class="form-control" value="@Model.SearchTerm" placeholder="Enter search term...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select name="category" id="category" class="form-select">
+                                <option value="all" selected="@(Model.Category == "all")">All Categories</option>
+                                <option value="cars" selected="@(Model.Category == "cars")">Cars</option>
+                                <option value="parts" selected="@(Model.Category == "parts")">Car Parts</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.TotalResults > 0)
+{
+    <!-- Results Section -->
+    <section class="results-section py-5">
+        <div class="container">
+            @if (Model.Cars.Any())
+            {
+                <!-- Cars Results -->
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-bold">Cars (@Model.Cars.Count)</h3>
+                        <a href="@Url.Action("Search", "Cars", new { searchTerm = Model.SearchTerm })" class="btn btn-outline-primary">
+                            View All Cars <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="row">
+                        @foreach (var car in Model.Cars.Take(6))
+                        {
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm car-card">
+                                    <div class="position-relative">
+                                        <img src="@(car.ImageUrl ?? "/images/placeholder-car.jpg")" 
+                                             class="card-img-top" alt="@car.Model" style="height: 200px; object-fit: cover;">
+                                        <span class="badge bg-primary position-absolute top-0 end-0 m-2">@car.Year</span>
+                                        @if (car.StockQuantity <= 3 && car.StockQuantity > 0)
+                                        {
+                                            <span class="badge bg-warning position-absolute top-0 start-0 m-2">Low Stock</span>
+                                        }
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">@car.Brand?.BrandName @car.Model</h5>
+                                        <p class="card-text text-muted small">@((car.Description?.Length > 100 ? car.Description.Substring(0, 100) + "..." : car.Description) ?? "No description available")</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <span class="badge bg-secondary me-1">@car.FuelType</span>
+                                                <span class="badge bg-info">@car.Transmission</span>
+                                            </div>
+                                            @if (car.Mileage.HasValue)
+                                            {
+                                                <small class="text-muted">@car.Mileage.Value.ToString("N0") km</small>
+                                            }
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="text-primary mb-0">@car.Price.ToString("C")</h5>
+                                            @if (car.StockQuantity > 0)
+                                            {
+                                                <span class="badge bg-success">Available</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Out of Stock</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                            <a href="@Url.Action("Details", "Cars", new { id = car.CarId })" 
+                                               class="btn btn-outline-primary flex-fill btn-sm">View Details</a>
+                                            @if (car.StockQuantity > 0)
+                                            {
+                                                <button type="button" class="btn btn-primary flex-fill btn-sm add-to-cart-btn" 
+                                                        data-item-id="@car.CarId" data-item-type="car">
+                                                    <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.CarParts.Any())
+            {
+                <!-- Car Parts Results -->
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-bold">Car Parts (@Model.CarParts.Count)</h3>
+                        <a href="@Url.Action("Search", "CarParts", new { searchTerm = Model.SearchTerm })" class="btn btn-outline-success">
+                            View All Parts <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="row">
+                        @foreach (var part in Model.CarParts.Take(8))
+                        {
+                            <div class="col-lg-3 col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm part-card">
+                                    <div class="position-relative">
+                                        <img src="@(part.ImageUrl ?? "/images/placeholder-part.jpg")" 
+                                             class="card-img-top" alt="@part.PartName" style="height: 150px; object-fit: cover;">
+                                        @if (part.StockQuantity <= 10 && part.StockQuantity > 0)
+                                        {
+                                            <span class="badge bg-warning position-absolute top-0 start-0 m-2">Low Stock</span>
+                                        }
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title">@part.PartName</h6>
+                                        <p class="text-muted small mb-1">@part.Brand?.BrandName</p>
+                                        <p class="text-muted small mb-2">Part #: @part.PartNumber</p>
+                                        
+                                        @if (!string.IsNullOrEmpty(part.Compatibility))
+                                        {
+                                            <p class="text-muted small mb-2">
+                                                <i class="fas fa-car me-1"></i>@part.Compatibility
+                                            </p>
+                                        }
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="text-success mb-0">@part.Price.ToString("C")</h6>
+                                            @if (part.StockQuantity > 0)
+                                            {
+                                                <span class="badge bg-success small">@part.StockQuantity in stock</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger small">Out of Stock</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                            <a href="@Url.Action("Details", "CarParts", new { id = part.CarPartId })" 
+                                               class="btn btn-outline-success btn-sm flex-fill">Details</a>
+                                            @if (part.StockQuantity > 0)
+                                            {
+                                                <button type="button" class="btn btn-success btn-sm flex-fill add-to-cart-btn" 
+                                                        data-item-id="@part.CarPartId" data-item-type="carpart">
+                                                    <i class="fas fa-cart-plus me-1"></i>Add
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+else
+{
+    <!-- No Results Section -->
+    <section class="no-results py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 text-center">
+                    <div class="card shadow-sm">
+                        <div class="card-body py-5">
+                            <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                            <h3 class="fw-bold mb-3">No Results Found</h3>
+                            <p class="text-muted mb-4">We couldn't find any cars or car parts matching your search for "<strong>@Model.SearchTerm</strong>".</p>
+                            
+                            <div class="mb-4">
+                                <h5 class="fw-semibold mb-3">Try these suggestions:</h5>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Check your spelling</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use different keywords</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Try more general terms</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Search in a different category</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-center">
+                                <a href="@Url.Action("Index", "Cars")" class="btn btn-primary">Browse All Cars</a>
+                                <a href="@Url.Action("Index", "CarParts")" class="btn btn-success">Browse Car Parts</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Popular Searches Section -->
+<section class="popular-searches py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="fw-bold text-center mb-4">Popular Searches</h4>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="@Url.Action("Search", new { searchTerm = "Toyota" })" class="btn btn-outline-secondary btn-sm">Toyota</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "Honda" })" class="btn btn-outline-secondary btn-sm">Honda</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "BMW" })" class="btn btn-outline-secondary btn-sm">BMW</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "Brake Pads" })" class="btn btn-outline-secondary btn-sm">Brake Pads</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "Air Filter" })" class="btn btn-outline-secondary btn-sm">Air Filter</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "SUV" })" class="btn btn-outline-secondary btn-sm">SUV</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "Sedan" })" class="btn btn-outline-secondary btn-sm">Sedan</a>
+                    <a href="@Url.Action("Search", new { searchTerm = "Engine Oil" })" class="btn btn-outline-secondary btn-sm">Engine Oil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12">
+                <h3 class="fw-bold mb-3">Can't Find What You're Looking For?</h3>
+                <p class="lead mb-4">Contact our expert team for personalized assistance</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="@Url.Action("Contact")" class="btn btn-warning btn-lg">Contact Us</a>
+                    <a href="tel:+94112345678" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-phone me-2"></i>Call Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add to cart functionality
+            $('.add-to-cart-btn').click(function() {
+                var button = $(this);
+                var itemId = button.data('item-id');
+                var itemType = button.data('item-type');
+                
+                // Check if user is logged in
+                @if (!Context.Session.IsAuthenticated())
+                {
+                    @:showToast('warning', 'Please log in to add items to cart');
+                    @:setTimeout(function() {
+                        @:window.location.href = '@Url.Action("Login", "Account")';
+                    @:}, 2000);
+                    @:return;
+                }
+                
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding...');
+                
+                $.post('@Url.Action("AddToCart", "Home")', {
+                    itemId: itemId,
+                    itemType: itemType,
+                    quantity: 1,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        button.html('<i class="fas fa-check"></i> Added!').removeClass('btn-primary btn-success').addClass('btn-success');
+                        updateCartCount(response.cartCount);
+                        showToast('success', response.message);
+                        
+                        setTimeout(function() {
+                            button.prop('disabled', false).html('<i class="fas fa-cart-plus me-1"></i>' + (itemType === 'car' ? 'Add to Cart' : 'Add')).removeClass('btn-success').addClass(itemType === 'car' ? 'btn-primary' : 'btn-success');
+                        }, 2000);
+                    } else {
+                        button.prop('disabled', false).html('<i class="fas fa-cart-plus me-1"></i>' + (itemType === 'car' ? 'Add to Cart' : 'Add'));
+                        showToast('error', response.message);
+                    }
+                })
+                .fail(function() {
+                    button.prop('disabled', false).html('<i class="fas fa-cart-plus me-1"></i>' + (itemType === 'car' ? 'Add to Cart' : 'Add'));
+                    showToast('error', 'An error occurred. Please try again.');
+                });
+            });
+
+            // Highlight search terms
+            highlightSearchTerms('@Model.SearchTerm');
+        });
+        
+        function updateCartCount(count) {
+            $('.cart-count').text(count);
+            if (count > 0) {
+                $('.cart-count').show();
+            }
+        }
+        
+        function showToast(type, message) {
+            var toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            var toastContainer = $('#toast-container');
+            if (toastContainer.length === 0) {
+                $('body').append('<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>');
+                toastContainer = $('#toast-container');
+            }
+            
+            var toastElement = $(toastHtml);
+            toastContainer.append(toastElement);
+            
+            var toast = new bootstrap.Toast(toastElement[0]);
+            toast.show();
+            
+            toastElement.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+        
+        function highlightSearchTerms(searchTerm) {
+            if (!searchTerm) return;
+            
+            var terms = searchTerm.toLowerCase().split(' ');
+            terms.forEach(function(term) {
+                if (term.length > 2) { // Only highlight terms with 3+ characters
+                    $('.card-title, .card-text').each(function() {
+                        var text = $(this).html();
+                        var regex = new RegExp('(' + term + ')', 'gi');
+                        $(this).html(text.replace(regex, '<mark>$1</mark>'));
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    .car-card:hover, .part-card:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+    
+    .car-card, .part-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .cta {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    mark {
+        background-color: #fff3cd;
+        padding: 0 2px;
+        border-radius: 2px;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .popular-searches .btn {
+        margin-bottom: 0.5rem;
+    }
+</style>

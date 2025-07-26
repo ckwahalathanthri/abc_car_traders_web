@@ -1,0 +1,553 @@
+﻿@model ABCCarTraders.Models.ViewModels.OrderConfirmationViewModel
+@{
+    ViewData["Title"] = "Order Confirmation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Success Header -->
+<div class="page-header bg-gradient-success text-white py-5 mb-4">
+    <div class="container">
+        <div class="row align-items-center justify-content-center text-center">
+            <div class="col-md-8">
+                <div class="success-icon mb-3">
+                    <i class="fas fa-check-circle fa-4x"></i>
+                </div>
+                <h1 class="display-5 fw-bold mb-3">Order Confirmed!</h1>
+                <p class="lead mb-3">Thank you for your purchase. Your order has been successfully placed.</p>
+                <div class="order-number">
+                    <span class="badge bg-light text-dark fs-6 px-3 py-2">
+                        Order #@Model.Order.OrderNumber
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Steps Progress -->
+<div class="container mb-5">
+    <div class="order-steps">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="step completed">
+                    <div class="step-icon bg-success text-white rounded-circle mb-2">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h6 class="fw-bold text-success">Cart Review</h6>
+                    <p class="text-muted small">Items selected</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step completed">
+                    <div class="step-icon bg-success text-white rounded-circle mb-2">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h6 class="fw-bold text-success">Payment Complete</h6>
+                    <p class="text-muted small">Order processed</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step completed">
+                    <div class="step-icon bg-success text-white rounded-circle mb-2">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h6 class="fw-bold text-success">Confirmation</h6>
+                    <p class="text-muted small">Order confirmed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row g-4">
+        <!-- Order Details -->
+        <div class="col-lg-8">
+            <!-- Order Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Order Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-info mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="small text-muted fw-semibold">Order Number</label>
+                                    <div class="fw-bold">#@Model.Order.OrderNumber</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="small text-muted fw-semibold">Order Date</label>
+                                    <div class="fw-bold">@Model.Order.FormattedOrderDate</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="small text-muted fw-semibold">Payment Method</label>
+                                    <div class="fw-bold">@Model.Order.PaymentMethod</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="small text-muted fw-semibold">Order Status</label>
+                                    <span class="badge bg-@Model.Order.StatusColor">@Model.Order.OrderStatus</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <h6 class="fw-bold mb-3">Items Ordered (@Model.Order.TotalItems)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Order.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="item-icon me-3">
+                                                        <i class="fas fa-@(item.ItemType == ABCCarTraders.Models.ItemType.Car ? "car" : "cogs") fa-2x text-@(item.ItemType == ABCCarTraders.Models.ItemType.Car ? "primary" : "success")"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">@item.ItemTypeName</div>
+                                                        <div class="small text-muted">Item ID: @item.ItemId</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">@item.Quantity</span>
+                                            </td>
+                                            <td class="text-end">@item.FormattedUnitPrice</td>
+                                            <td class="text-end fw-bold">@item.FormattedTotalPrice</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total Amount:</td>
+                                        <td class="text-end fw-bold text-success fs-5">@Model.Order.FormattedTotalAmount</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>Shipping Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="shipping-details">
+                                <h6 class="fw-bold mb-2">Delivery Address</h6>
+                                <div class="address">
+                                    @if (!string.IsNullOrEmpty(Model.Order.ShippingAddress))
+                                    {
+                                        <p class="mb-0">@Model.Order.ShippingAddress</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted mb-0">Address details will be updated soon</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="delivery-info">
+                                <h6 class="fw-bold mb-2">Estimated Delivery</h6>
+                                <div class="delivery-date">
+                                    <i class="fas fa-calendar-alt text-success me-2"></i>
+                                    <span class="fw-semibold">@Model.FormattedEstimatedDeliveryDate</span>
+                                </div>
+                                <div class="tracking-info mt-2">
+                                    <small class="text-muted">
+                                        Tracking number: <strong>@Model.TrackingNumber</strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Notes -->
+            @if (!string.IsNullOrEmpty(Model.Order.Notes))
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Order Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Model.Order.Notes</p>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="quick-actions mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Details", "Order", new { id = Model.Order.OrderId })" 
+                               class="btn btn-primary">
+                                <i class="fas fa-eye me-2"></i>View Order Details
+                            </a>
+                            <button type="button" class="btn btn-success" onclick="trackOrder()">
+                                <i class="fas fa-truck me-2"></i>Track Order
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="downloadInvoice()">
+                                <i class="fas fa-download me-2"></i>Download Invoice
+                            </button>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Support -->
+            <div class="customer-support mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-headset me-2"></i>Customer Support
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Need help with your order? Our support team is here to assist you.</p>
+                        <div class="contact-options">
+                            <div class="contact-item mb-2">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                <strong>Phone:</strong> @Model.SupportPhone
+                            </div>
+                            <div class="contact-item mb-2">
+                                <i class="fas fa-envelope text-success me-2"></i>
+                                <strong>Email:</strong> @Model.SupportEmail
+                            </div>
+                            <div class="contact-item mb-3">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                <strong>Hours:</strong> Mon-Fri 9AM-6PM
+                            </div>
+                        </div>
+                        <div class="support-actions d-grid gap-2">
+                            <a href="tel:@Model.SupportPhone.Replace(" ", "")" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-phone me-1"></i>Call Now
+                            </a>
+                            <a href="mailto:@Model.SupportEmail?subject=Order Inquiry - @Model.Order.OrderNumber" 
+                               class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-envelope me-1"></i>Send Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="next-steps">
+                <div class="card bg-light border-0">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-check me-2 text-dark"></i>What's Next?
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-success">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="fw-bold">Order Confirmed</h6>
+                                    <p class="small text-muted mb-0">Your order has been received and is being processed</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-warning">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="fw-bold">Processing</h6>
+                                    <p class="small text-muted mb-0">We're preparing your items for shipment</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-info">
+                                    <i class="fas fa-truck text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="fw-bold">Shipping</h6>
+                                    <p class="small text-muted mb-0">Your order will be shipped within 2-3 business days</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary">
+                                    <i class="fas fa-home text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="fw-bold">Delivery</h6>
+                                    <p class="small text-muted mb-0">Estimated delivery: @Model.FormattedEstimatedDeliveryDate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Confirmation Notice -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="fw-bold mb-1">
+                            <i class="fas fa-envelope me-2"></i>Confirmation Email Sent
+                        </h6>
+                        <p class="mb-0">
+                            We've sent a confirmation email to <strong>@Model.Order.CustomerEmail</strong> 
+                            with your order details and tracking information.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-outline-info" onclick="resendEmail()">
+                            <i class="fas fa-envelope me-1"></i>Resend Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Social Sharing -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="social-sharing text-center">
+                <h6 class="fw-bold mb-3">Share Your Purchase</h6>
+                <div class="social-buttons">
+                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="shareOnFacebook()">
+                        <i class="fab fa-facebook-f me-1"></i>Facebook
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="shareOnTwitter()">
+                        <i class="fab fa-twitter me-1"></i>Twitter
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="shareOnWhatsApp()">
+                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .success-icon {
+        animation: bounceIn 1s ease-out;
+    }
+    
+    @@keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 1.2rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 0.25rem;
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .item-icon .fa-2x {
+        font-size: 1.5rem;
+    }
+    
+    .contact-item {
+        font-size: 0.9rem;
+    }
+    
+    .social-buttons .btn {
+        min-width: 100px;
+    }
+    
+    @@media (max-width: 768px) {
+        .order-steps .step {
+            margin-bottom: 2rem;
+        }
+        
+        .timeline {
+            padding-left: 1.5rem;
+        }
+        
+        .timeline-marker {
+            left: -1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        
+        .social-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+    }
+</style>
+
+<script>
+    function trackOrder() {
+        // Redirect to order tracking page
+        window.location.href = '@Url.Action("Details", "Order", new { id = Model.Order.OrderId })';
+    }
+    
+    function downloadInvoice() {
+        // Implementation for invoice download
+        const orderId = @Model.Order.OrderId;
+        window.open(`@Url.Action("DownloadInvoice", "Order")?orderId=${orderId}`, '_blank');
+    }
+    
+    function resendEmail() {
+        fetch('@Url.Action("ResendConfirmationEmail", "Order")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ orderId: @Model.Order.OrderId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Confirmation email sent successfully!');
+            } else {
+                alert('Error sending email: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending the email.');
+        });
+    }
+    
+    function shareOnFacebook() {
+        const shareText = `I just ordered from ABC Car Traders! Order #@Model.Order.OrderNumber`;
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+    
+    function shareOnTwitter() {
+        const shareText = `I just ordered from ABC Car Traders! Order #@Model.Order.OrderNumber`;
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+    
+    function shareOnWhatsApp() {
+        const shareText = `I just ordered from ABC Car Traders! Order #@Model.Order.OrderNumber`;
+        const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + window.location.href)}`;
+        window.open(shareUrl, '_blank');
+    }
+    
+    // Auto-redirect to order details after 30 seconds (optional)
+    setTimeout(function() {
+        const autoRedirect = confirm('Would you like to view your order details?');
+        if (autoRedirect) {
+            window.location.href = '@Url.Action("Details", "Order", new { id = Model.Order.OrderId })';
+        }
+    }, 30000);
+    
+    // Print this page functionality
+    function printConfirmation() {
+        window.print();
+    }
+    
+    // Add print button if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // You can add a print button dynamically if required
+    });
+</script>
